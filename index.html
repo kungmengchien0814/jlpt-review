@@ -2954,7 +2954,7 @@ function speakSeq(parts){
       u.lang = "ja-JP";
       if (v.voice) u.voice = v.voice;
       u.pitch = v.pitch;
-      u.rate = p.rate || 0.88;
+      u.rate = (p.rate || 0.88) * (store.slow ? 0.75 : 1);
       u.onend = () => setTimeout(step, p.gap == null ? 450 : p.gap);
       u.onerror = () => { if (token === speakToken) setTimeout(step, 100); };
       speechSynthesis.speak(u);
@@ -3119,7 +3119,7 @@ function passageHTML(it){
 function audioHTML(q, a){
   const it = q.it;
   let h = `<div class="audio">`;
-  if (tts.ok) h += `<button class="play" id="playbtn" data-act="play">${ICON_PLAY}${tx(" 播放題目", " 音声を再生")}</button>`;
+  if (tts.ok) h += `<button class="play" id="playbtn" data-act="play">${ICON_PLAY}${tx(" 播放題目", " 音声を再生")}</button><button class="btn-ghost" data-act="slow" aria-pressed="${store.slow ? "true" : "false"}">${tx("慢速", "ゆっくり")}</button>`;
   if (!a && !q.reveal) h += `<button class="btn-ghost" data-act="reveal">${tx("顯示原文", "スクリプトを表示")}</button>`;
   h += `</div><p class="note" id="anote">${audioNote()}</p>`;
   if (it.type === "hatsuwa") h += `<p class="situ"><span${ZH}>${esc(it.sit)}</span><span class="ja" lang="ja">${jpHTML(it.ja)}</span></p>`;
@@ -3470,6 +3470,7 @@ $app.addEventListener("click", e => {
     case "next": return next();
     case "play": { const q = cur(); return speakSeq(audioParts(q.it, q.order)); }
     case "reveal": cur().reveal = true; return renderQuiz(false);
+    case "slow": store.slow = !store.slow; save(); el.setAttribute("aria-pressed", store.slow ? "true" : "false"); { const q = cur(); return speakSeq(audioParts(q.it, q.order)); }
     case "furi": store.furi = !store.furi; save(); applyFuri(); el.setAttribute("aria-pressed", store.furi ? "true" : "false"); return;
     case "retry": { const ids = quiz.items.filter(x => !(quiz.answers[x.it.id] && quiz.answers[x.it.id].ok)).map(x => x.it); return startQuiz("retry", ids); }
     case "again": return again();
@@ -3487,7 +3488,7 @@ $app.addEventListener("click", e => {
     case "info": return renderInfo();
     case "reset":
       if (confirm(tx("確定清除所有練習紀錄、錯題本和單字卡進度？", "すべての記録、間違えた問題、単語カードの進み具合を消しますか？"))){
-        const keep = {furi: store.furi, checks: store.checks, lang: store.lang, theme: store.theme, mywords: store.mywords};
+        const keep = {furi: store.furi, checks: store.checks, lang: store.lang, theme: store.theme, mywords: store.mywords, slow: store.slow};
         Object.keys(store).forEach(k => delete store[k]);
         Object.assign(store, {stats:{}, wrong:[], answered:0, correct:0, known:{}, best:null}, keep); save(); renderHome();
       }
