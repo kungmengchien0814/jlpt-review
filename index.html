@@ -3,19 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>/* Apply the saved theme and language before the first paint */try{var s=JSON.parse(localStorage.getItem("jlpt-n4-review-v1"))||{};if(s.theme==="light"||s.theme==="dark")document.documentElement.setAttribute("data-theme",s.theme);if(s.lang==="ja"){document.documentElement.lang="ja";}}catch(e){}</script>
 <title>日檢 N4 考前衝刺</title>
 <meta name="description" content="JLPT 日本語能力試驗 N4 考前練習：文字語彙、文法、讀解、聽解（瀏覽器語音）、單字卡、文法速查和錯題本，每題附中文翻譯與解析。自編練習題，非官方試題。">
 <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121418" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="favicon.svg?v=20261122a" type="image/svg+xml">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261122a">
+<link rel="icon" href="favicon.svg?v=20261122b" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261122b">
 <link rel="canonical" href="https://kungmengchien.uk/jlpt-review/">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="zh_TW">
 <meta property="og:title" content="日檢 N4 考前衝刺">
 <meta property="og:description" content="文字語彙、文法、讀解、聽解、單字卡和文法速查，每題附中文解析，手機就能練。自編練習題，非官方試題。">
 <meta property="og:url" content="https://kungmengchien.uk/jlpt-review/">
-<meta property="og:image" content="https://kungmengchien.uk/jlpt-review/og.png?v=20261122a">
+<meta property="og:image" content="https://kungmengchien.uk/jlpt-review/og.png?v=20261122b">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
@@ -67,7 +68,16 @@ html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.65 var(--f-ui)}
 button,input{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--print);outline-offset:2px}
-[lang="ja"]{font-family:var(--f-jp)}
+/* Japanese interface: Japanese gothic for the UI, Mincho for Japanese study text, Chinese content keeps Chinese fonts */
+html[lang="ja"] body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic","Meiryo","Noto Sans JP",sans-serif}
+html[lang="ja"] [lang="zh-Hant"]{font-family:var(--f-ui)}
+body [lang="ja"]{font-family:var(--f-jp)}
+.prefs{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.seg{display:inline-flex;padding:2px;border:1px solid var(--line);border-radius:999px;background:var(--sheet)}
+.seg button{border:0;background:none;border-radius:999px;min-height:30px;padding:4px 12px;font:600 13px/1.2 var(--f-ui);color:var(--muted);cursor:pointer}
+.seg button[lang="ja"]{font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",var(--f-ui)}
+.seg button[aria-pressed="true"]{background:var(--lead);color:var(--lead-ink)}
+.seg button[aria-pressed="false"]:hover{color:var(--ink)}
 .wrap{max-width:680px;margin:0 auto;padding:20px 16px 24px;display:flex;flex-direction:column;gap:16px}
 .foot{max-width:680px;margin:0 auto;padding:8px 16px 48px;color:var(--muted);font-size:13px;line-height:1.6;text-align:center}
 .foot p{margin:0}
@@ -341,12 +351,13 @@ div.opt{cursor:default}
 @media (min-width:1024px){
   .wrap[data-view="home"]{max-width:1120px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start}
   .wrap[data-view="home"] .home-side{display:flex;position:sticky;top:24px}
+  .wrap[data-view="home"] .prefs{grid-column:1 / -1;margin-bottom:-8px}
   .wrap[data-view="quiz-p"]{max-width:1180px}
   .qcard.has-p{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:32px;align-items:start;overflow:visible;padding:24px}
   .qcard.has-p .passage{position:sticky;top:20px;max-height:calc(100vh - 40px);overflow:auto;margin:0}
   .wrap[data-view="grammar"]{max-width:900px}
   .wrap[data-view="info"]{max-width:1000px;display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
-  .wrap[data-view="info"] > .qtop{grid-column:1 / -1}
+  .wrap[data-view="info"] > .qtop,.wrap[data-view="info"] > .prefs{grid-column:1 / -1}
   .info-col{display:flex;flex-direction:column;gap:20px;min-width:0}
 }
 .info-col{display:flex;flex-direction:column;gap:16px;min-width:0}
@@ -366,7 +377,7 @@ div.opt{cursor:default}
 <body>
 <main class="wrap" id="app"></main>
 <footer class="foot">
-  <p>本站題目、單字與文法說明皆為自編練習內容，非日本語能力試驗官方試題。日本語能力試驗（JLPT）由國際交流基金會與日本國際教育支援協會主辦，台灣由語言訓練測驗中心（LTTC）辦理；本站與上述單位無關。</p>
+  <p id="foot-note">本站題目、單字與文法說明皆為自編練習內容，非日本語能力試驗官方試題。日本語能力試驗（JLPT）由國際交流基金會與日本國際教育支援協會主辦，台灣由語言訓練測驗中心（LTTC）辦理；本站與上述單位無關。</p>
 </footer>
 
 <script>
@@ -1097,29 +1108,30 @@ const GRAMMAR_SRC = `
 `;
 
 /* ================= Setup ================= */
-const EXAM = { label:"2026/12/6（日）", start: new Date("2026-12-06T00:00:00+08:00"), checked:"2026/11/22" };
+const EXAM = { start: new Date("2026-12-06T00:00:00+08:00"), checked:"2026/11/22" };
+/* inst/desc are [中文, 日本語]; name is the official Japanese name of the item type */
 const TYPES = {
-  kanji:   {sec:"goi",    no:"問題1", name:"漢字読み",       zh:"漢字讀音",   inst:"畫線的詞怎麼讀？"},
-  hyoki:   {sec:"goi",    no:"問題2", name:"表記",           zh:"漢字寫法",   inst:"畫線的詞寫成漢字是哪一個？"},
-  bunmyaku:{sec:"goi",    no:"問題3", name:"文脈規定",       zh:"依上下文選詞", inst:"（　）裡放哪個詞最適合？"},
-  iikae:   {sec:"goi",    no:"問題4", name:"言い換え類義",   zh:"換句話說",   inst:"哪一句和畫線的句子意思差不多？"},
-  yoho:    {sec:"goi",    no:"問題5", name:"用法",           zh:"用法判斷",   inst:"這個詞用得最正確的是哪一句？"},
-  bunpo:   {sec:"bunpo",  no:"問題1", name:"文法形式の判断", zh:"文法填空",   inst:"（　）裡放哪個最適合？"},
-  narabe:  {sec:"bunpo",  no:"問題2", name:"文の組み立て",   zh:"句子重組",   inst:"把四個選項排成正確的句子，★ 的位置是哪一個？"},
-  bunsho:  {sec:"bunpo",  no:"問題3", name:"文章の文法",     zh:"文章填空",   inst:"文章裡的空格放哪個最適合？"},
-  tan:     {sec:"dokkai", no:"問題4", name:"内容理解（短文）", zh:"短文閱讀", inst:"讀完短文回答問題。"},
-  chu:     {sec:"dokkai", no:"問題5", name:"内容理解（中文）", zh:"中篇閱讀", inst:"讀完文章回答問題。"},
-  joho:    {sec:"dokkai", no:"問題6", name:"情報検索",       zh:"找資訊",     inst:"看公告或表格回答問題。"},
-  kadai:   {sec:"chokai", no:"問題1", name:"課題理解",       zh:"接下來要做什麼", inst:"先看選項，再聽對話，選出答案。"},
-  point:   {sec:"chokai", no:"問題2", name:"ポイント理解",   zh:"抓理由與重點", inst:"先看問題和選項，再聽對話，選出答案。"},
-  hatsuwa: {sec:"chokai", no:"問題3", name:"発話表現",       zh:"這時候說什麼", inst:"看情境，聽三個說法，選最適合的。"},
-  sokuji:  {sec:"chokai", no:"問題4", name:"即時応答",       zh:"立即回應",   inst:"聽一句話和三個回應，選最適合的。題目不會印出來。"}
+  kanji:   {sec:"goi",    no:"問題1", name:"漢字読み",       d:["漢字讀音","漢字の読み方"],           inst:["畫線的詞怎麼讀？","＿＿のことばの読み方は？"]},
+  hyoki:   {sec:"goi",    no:"問題2", name:"表記",           d:["漢字寫法","漢字の書き方"],           inst:["畫線的詞寫成漢字是哪一個？","＿＿のことばを漢字で書くと？"]},
+  bunmyaku:{sec:"goi",    no:"問題3", name:"文脈規定",       d:["依上下文選詞","文に合うことばを選ぶ"], inst:["（　）裡放哪個詞最適合？","（　）に入れるのに最もよいものは？"]},
+  iikae:   {sec:"goi",    no:"問題4", name:"言い換え類義",   d:["換句話說","同じ意味の文を選ぶ"],     inst:["哪一句和畫線的句子意思差不多？","＿＿の文とだいたい同じ意味の文は？"]},
+  yoho:    {sec:"goi",    no:"問題5", name:"用法",           d:["用法判斷","正しい使い方を選ぶ"],     inst:["這個詞用得最正確的是哪一句？","このことばの使い方として最もよいものは？"]},
+  bunpo:   {sec:"bunpo",  no:"問題1", name:"文法形式の判断", d:["文法填空","文法の穴埋め"],           inst:["（　）裡放哪個最適合？","（　）に入れるのに最もよいものは？"]},
+  narabe:  {sec:"bunpo",  no:"問題2", name:"文の組み立て",   d:["句子重組","並べ替え（★）"],          inst:["把四個選項排成正確的句子，★ 的位置是哪一個？","正しい順に並べたとき、★に入るものは？"]},
+  bunsho:  {sec:"bunpo",  no:"問題3", name:"文章の文法",     d:["文章填空","文章の穴埋め"],           inst:["文章裡的空格放哪個最適合？","文章の空欄に入れるのに最もよいものは？"]},
+  tan:     {sec:"dokkai", no:"問題4", name:"内容理解（短文）", d:["短文閱讀","短い文章"],            inst:["讀完短文回答問題。","文章を読んで、質問に答えてください。"]},
+  chu:     {sec:"dokkai", no:"問題5", name:"内容理解（中文）", d:["中篇閱讀","中くらいの文章"],      inst:["讀完文章回答問題。","文章を読んで、質問に答えてください。"]},
+  joho:    {sec:"dokkai", no:"問題6", name:"情報検索",       d:["找資訊","お知らせ・表から探す"],     inst:["看公告或表格回答問題。","お知らせや表を見て、質問に答えてください。"]},
+  kadai:   {sec:"chokai", no:"問題1", name:"課題理解",       d:["接下來要做什麼","次に何をするか"],   inst:["先看選項，再聽對話，選出答案。","先に選択肢を見てから会話を聞き、答えを選んでください。"]},
+  point:   {sec:"chokai", no:"問題2", name:"ポイント理解",   d:["抓理由與重點","理由・ポイントを聞き取る"], inst:["先看問題和選項，再聽對話，選出答案。","先に質問と選択肢を見てから会話を聞き、答えを選んでください。"]},
+  hatsuwa: {sec:"chokai", no:"問題3", name:"発話表現",       d:["這時候說什麼","この場面で何と言うか"], inst:["看情境，聽三個說法，選最適合的。","場面を読み、三つの言い方から最もよいものを選んでください。"]},
+  sokuji:  {sec:"chokai", no:"問題4", name:"即時応答",       d:["立即回應","すぐに返事をする"],       inst:["聽一句話和三個回應，選最適合的。題目不會印出來。","短い文と三つの返事を聞き、最もよいものを選んでください。問題は書かれていません。"]}
 };
 const SECS = {
-  goi:   {name:"文字・語彙", short:"語彙", zh:"文字語彙", time:"25 分", desc:"漢字讀音、寫法、依上下文選詞、換句話說、用法"},
-  bunpo: {name:"文法",       short:"文法", zh:"文法",     time:"與讀解共 55 分", desc:"文法填空、句子重組（★）、文章填空"},
-  dokkai:{name:"読解",       short:"読解", zh:"讀解",     time:"與文法共 55 分", desc:"短文、中篇文章、公告表格找資訊"},
-  chokai:{name:"聴解",       short:"聴解", zh:"聽解",     time:"35 分", desc:"瀏覽器念日文：課題理解、重點、發話、即時應答"}
+  goi:   {name:"文字・語彙", short:"語彙", d:["文字語彙","文字・語彙"], mins:25, time:["25 分","25 分"],                     desc:["漢字讀音、寫法、依上下文選詞、換句話說、用法","漢字読み・表記・文脈規定・言い換え類義・用法"]},
+  bunpo: {name:"文法",       short:"文法", d:["文法","文法"],           mins:55, time:["與讀解共 55 分","読解と合わせて 55 分"], desc:["文法填空、句子重組（★）、文章填空","文法形式の判断・並べ替え（★）・文章の文法"]},
+  dokkai:{name:"読解",       short:"読解", d:["讀解","読解"],           mins:55, time:["與文法共 55 分","文法と合わせて 55 分"], desc:["短文、中篇文章、公告表格找資訊","短文・中文・情報検索"]},
+  chokai:{name:"聴解",       short:"聴解", d:["聽解","聴解"],           mins:35, time:["35 分","35 分"],                     desc:["瀏覽器念日文：課題理解、重點、發話、即時應答","ブラウザの音声で出題：課題理解・ポイント理解・発話表現・即時応答"]}
 };
 const SEC_TYPES = {goi:["kanji","hyoki","bunmyaku","iikae","yoho"], bunpo:["bunpo","narabe","bunsho"], dokkai:["tan","chu","joho"], chokai:["kadai","point","hatsuwa","sokuji"]};
 const PASSAGE_TYPES = new Set(["bunsho","tan","chu","joho"]);
@@ -1152,6 +1164,43 @@ store.wrong = store.wrong.filter(id => ITEMS[id]);
 function applyFuri(){ document.documentElement.classList.toggle("furi", !!store.furi); }
 applyFuri();
 
+/* ---------------- Interface language and appearance ----------------
+   Only the interface switches language; translations, explanations and word meanings stay in Chinese.
+   Chinese content is marked lang="zh-Hant" so it keeps Chinese glyphs when the page is in Japanese. */
+let lang = store.lang === "ja" ? "ja" : "zh";
+const tx = (zh, ja) => lang === "ja" ? ja : zh;
+const L2 = a => lang === "ja" ? a[1] : a[0];
+const ZH = ' lang="zh-Hant"';
+const darkMQ = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : {matches:false};
+function currentTheme(){ return store.theme === "light" || store.theme === "dark" ? store.theme : (darkMQ.matches ? "dark" : "light"); }
+function applyTheme(){
+  const t = store.theme === "light" || store.theme === "dark" ? store.theme : "";
+  if (t) document.documentElement.setAttribute("data-theme", t); else document.documentElement.removeAttribute("data-theme");
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+    if (!m.dataset.orig) m.dataset.orig = m.content;
+    m.content = t ? (t === "dark" ? "#121418" : "#f3f2ee") : m.dataset.orig;
+  });
+}
+function applyLang(){
+  document.documentElement.lang = lang === "ja" ? "ja" : "zh-Hant";
+  document.title = tx("日檢 N4 考前衝刺", "JLPT N4 直前対策");
+  const f = document.getElementById("foot-note");
+  if (f) f.textContent = tx("本站題目、單字與文法說明皆為自編練習內容，非日本語能力試驗官方試題。日本語能力試驗（JLPT）由國際交流基金會與日本國際教育支援協會主辦，台灣由語言訓練測驗中心（LTTC）辦理；本站與上述單位無關。",
+    "このサイトの問題・単語・文法解説はすべてオリジナルの練習用で、日本語能力試験の公式問題ではありません。日本語能力試験（JLPT）は国際交流基金と日本国際教育支援協会が主催し、台湾では語言訓練測験中心（LTTC）が実施しています。このサイトはこれらの団体とは関係ありません。");
+}
+function prefsHTML(){
+  const th = currentTheme();
+  const b = (act, v, on, label, l) => `<button type="button" data-act="${act}" data-v="${v}" aria-pressed="${on}"${l ? ` lang="${l}"` : ""}>${label}</button>`;
+  return `<div class="prefs">
+    <div class="seg" role="group" aria-label="${tx("介面語言", "表示言語")}">${b("lang", "zh", lang === "zh", "中文", "zh-Hant")}${b("lang", "ja", lang === "ja", "日本語", "ja")}</div>
+    <div class="seg" role="group" aria-label="${tx("外觀", "表示モード")}">${b("theme", "light", th === "light", tx("淺色", "ライト"))}${b("theme", "dark", th === "dark", tx("深色", "ダーク"))}</div>
+  </div>`;
+}
+applyTheme(); applyLang();
+if (darkMQ.addEventListener) darkMQ.addEventListener("change", () => {
+  document.querySelectorAll('[data-act="theme"]').forEach(b => b.setAttribute("aria-pressed", b.dataset.v === currentTheme()));
+});
+
 /* ---------------- Helpers ---------------- */
 const $app = document.getElementById("app");
 const reduceMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -1160,7 +1209,7 @@ function shuffle(a){ a = a.slice(); for (let i = a.length-1; i > 0; i--){ const 
 const RUBY_RE = /\{([^:{}]+):([^{}]+)\}/g;
 function plain(s){ return String(s).replace(RUBY_RE, "$1").replace(/[\[\]]/g, "").replace(/＿★＿|＿＿＿/g, "＿＿").replace(/［(\d)］/g, "（$1）"); }
 function kana(s){ return String(s).replace(RUBY_RE, "$2").replace(/[\[\]]/g, ""); }
-/* Japanese markup → HTML. Always wrapped in lang="ja" so kanji take their Japanese glyph shapes. */
+/* Japanese markup → HTML. Callers wrap it in lang="ja" so kanji take their Japanese glyph shapes. */
 function jpHTML(s, cur){
   let h = esc(s).replace(RUBY_RE, (m,b,r) => `<ruby>${b}<rt>${r}</rt></ruby>`);
   h = h.replace(/\[([^\]]+)\]/g, '<u class="tg">$1</u>')
@@ -1175,6 +1224,7 @@ const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v1
 const ICON_SPEAK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';
 const NUMS = ["1","2","3","4"];
 const JA_NUM = ["いち","に","さん","よん"];
+const back = () => `<button class="btn-ghost" data-act="home">${tx("‹ 首頁", "‹ ホーム")}</button>`;
 
 /* ---------------- Speech (Japanese voices from the browser) ---------------- */
 const tts = { ok: ("speechSynthesis" in window) && ("SpeechSynthesisUtterance" in window), voices: [] };
@@ -1191,7 +1241,7 @@ function voiceFor(role){
   return {voice:fem[1] || fem[0] || vs[0] || null, pitch:1};
 }
 let speakToken = 0;
-function setSpeaking(on){ const b = document.getElementById("playbtn"); if (b){ b.classList.toggle("on", on); b.innerHTML = ICON_PLAY + (on ? " 播放中…點我重播" : " 播放題目"); } }
+function setSpeaking(on){ const b = document.getElementById("playbtn"); if (b){ b.classList.toggle("on", on); b.innerHTML = ICON_PLAY + (on ? tx(" 播放中…點我重播", " 再生中…タップでもう一度") : tx(" 播放題目", " 音声を再生")); } }
 function speakSeq(parts){
   if (!tts.ok) return;
   try { speechSynthesis.cancel(); } catch(e){}
@@ -1264,14 +1314,23 @@ function buildMock(){
 }
 
 /* ---------------- Quiz state ---------------- */
-let view = "home", quiz = null, deck = null, gram = {q:"", cat:"全部"}, tick = null;
-function startQuiz(mode, title, items, exam){
+let view = "home", quiz = null, deck = null, gram = {q:"", cat:"全部"}, tick = null, curSec = "goi";
+function startQuiz(mode, items, exam){
   stopSpeech();
   if (!items.length) return;
-  quiz = { mode, title, exam: !!exam, i: 0, answers: {}, start: Date.now(),
+  quiz = { mode, exam: !!exam, i: 0, answers: {}, start: Date.now(),
            items: items.map(it => ({it, order: it.fixed ? it.fixed.slice() : shuffle(it.o.map((_,k) => k)), reveal: false})) };
   if (exam) startClock();
   renderQuiz(true);
+}
+function quizTitle(){
+  const m = quiz.mode;
+  if (m === "mock") return tx("迷你模考", "ミニ模試");
+  if (m.startsWith("type:")){ const T = TYPES[m.slice(5)]; return `${SECS[T.sec].name}・${T.name}`; }
+  if (m.startsWith("sec:")) return `${SECS[m.slice(4)].name}・${tx("混合", "ミックス")}`;
+  if (m === "wrong") return tx("錯題本", "間違えた問題");
+  if (m === "retry") return tx("重練錯題", "間違いを復習");
+  return tx("練習", "練習");
 }
 function startClock(){ stopClock(); tick = setInterval(() => { const el = document.getElementById("clock"); if (el) el.textContent = mmss(Date.now() - quiz.start); }, 1000); }
 function stopClock(){ if (tick){ clearInterval(tick); tick = null; } }
@@ -1298,7 +1357,7 @@ function select(disp){
 function next(){
   stopSpeech();
   if (quiz.i < quiz.items.length - 1){ quiz.i++; renderQuiz(true); window.scrollTo(0,0); }
-  else { stopClock(); renderResult(); }
+  else { stopClock(); renderResult(true); }
 }
 function goHome(){ stopClock(); stopSpeech(); quiz = null; renderHome(); window.scrollTo(0,0); }
 
@@ -1319,25 +1378,25 @@ function fullHTML(it){
 }
 function explainHTML(q, a){
   const it = q.it, ok = a.ok, right = q.order.indexOf(0);
-  let h = `<div class="explain"><div class="verdict ${ok ? "ok" : "ng"}">${ok ? "答對了" : "答錯了"} <span class="ans">正確答案 ${NUMS[right]}</span></div>`;
+  let h = `<div class="explain"><div class="verdict ${ok ? "ok" : "ng"}">${ok ? tx("答對了", "正解") : tx("答錯了", "不正解")} <span class="ans">${tx("正確答案", "正解は")} ${NUMS[right]}</span></div>`;
   const full = fullHTML(it);
   if (full) h += `<p class="full" lang="ja">${full}</p>`;
   if (AUDIO_TYPES.has(it.type)) h += transcriptHTML(q);
-  if (it.zh) h += `<p class="zh">${esc(it.zh)}</p>`;
-  if (it.note) h += `<p class="tip">${noteHTML(it.note)}</p>`;
+  if (it.zh) h += `<p class="zh"${ZH}>${esc(it.zh)}</p>`;
+  if (it.note) h += `<p class="tip"${ZH}>${noteHTML(it.note)}</p>`;
   return h + `</div>`;
 }
-/* Notes are Chinese with Japanese inside 「」 or after ＝; mark the whole note as zh and the quoted bits as ja */
+/* Notes are Chinese with Japanese inside 「」; mark the quoted bits as ja */
 function noteHTML(s){ return esc(s).replace(RUBY_RE, (m,b,r) => `<ruby>${b}<rt>${r}</rt></ruby>`).replace(/「([^」]+)」/g, '<span lang="ja">「$1」</span>'); }
 function transcriptHTML(q){
   const it = q.it;
-  const sp = r => ({m:"男", f:"女", n:"旁白"}[r] || "");
+  const sp = r => ({m:tx("男", "男"), f:tx("女", "女"), n:tx("旁白", "ナレーター")}[r] || "");
   let t = "";
   if (it.type === "kadai" || it.type === "point"){
-    t += `<p><span class="sp">旁白</span>${jp(it.intro)}${jp(it.q)}</p>`;
+    t += `<p><span class="sp">${sp("n")}</span>${jp(it.intro)}${jp(it.q)}</p>`;
     it.lines.forEach(([r,x]) => t += `<p><span class="sp">${sp(r)}</span>${jp(x)}</p>`);
   } else if (it.type === "hatsuwa"){
-    t += `<p><span class="sp">旁白</span>${jp(it.ja)}</p>`;
+    t += `<p><span class="sp">${sp("n")}</span>${jp(it.ja)}</p>`;
     q.order.forEach((k,i) => t += `<p><span class="sp">${NUMS[i]}</span>${jp(it.o[k])}</p>`);
   } else {
     t += `<p><span class="sp">${sp(it.line[0])}</span>${jp(it.line[1])}</p>`;
@@ -1347,6 +1406,7 @@ function transcriptHTML(q){
 }
 
 /* ---------------- Render: quiz ---------------- */
+const PLABEL = {"留言":"メモ","公告":"お知らせ","電子郵件":"メール","短文":"短文","課程表":"クラス案内"};
 function passageHTML(it){
   const p = it.passage;
   /* Paragraph strings: a leading "!" means no first-line indent (memos, notices). Objects {table:[[header...],[row...]]} become tables. */
@@ -1356,24 +1416,24 @@ function passageHTML(it){
     return `<p${ni ? ' class="ni"' : ""}>${jpHTML(ni ? x.slice(1) : x, it.type === "bunsho" ? it.qi : null)}</p>`;
   };
   const body = p.body.map(para).join("");
-  const label = it.type === "bunsho" ? "文章（空格 " + it.qi + "）" : (p.title_zh || "文章");
-  return `<details class="passage" open><summary>${esc(label)}</summary><div class="ptext fz" lang="ja">${p.title ? `<h4>${jpHTML(p.title)}</h4>` : ""}${body}</div>${p.zh && quiz.answers[it.id] ? `<p class="note" style="padding:0 14px">${esc(p.zh)}</p>` : ""}</details>`;
+  const label = it.type === "bunsho" ? tx(`文章（空格 ${it.qi}）`, `文章（空欄 ${it.qi}）`) : (p.title_zh ? tx(p.title_zh, PLABEL[p.title_zh] || p.title_zh) : tx("文章", "文章"));
+  return `<details class="passage" open><summary>${esc(label)}</summary><div class="ptext fz" lang="ja">${p.title ? `<h4>${jpHTML(p.title)}</h4>` : ""}${body}</div>${p.zh && quiz.answers[it.id] ? `<p class="note"${ZH} style="padding:0 14px">${esc(p.zh)}</p>` : ""}</details>`;
 }
 function audioHTML(q, a){
   const it = q.it;
   let h = `<div class="audio">`;
-  if (tts.ok) h += `<button class="play" id="playbtn" data-act="play">${ICON_PLAY} 播放題目</button>`;
-  if (!a && !q.reveal) h += `<button class="btn-ghost" data-act="reveal">顯示原文</button>`;
+  if (tts.ok) h += `<button class="play" id="playbtn" data-act="play">${ICON_PLAY}${tx(" 播放題目", " 音声を再生")}</button>`;
+  if (!a && !q.reveal) h += `<button class="btn-ghost" data-act="reveal">${tx("顯示原文", "スクリプトを表示")}</button>`;
   h += `</div><p class="note" id="anote">${audioNote()}</p>`;
-  if (it.type === "hatsuwa") h += `<p class="situ"><span>${esc(it.sit)}</span><span class="ja" lang="ja">${jpHTML(it.ja)}</span></p>`;
+  if (it.type === "hatsuwa") h += `<p class="situ"><span${ZH}>${esc(it.sit)}</span><span class="ja" lang="ja">${jpHTML(it.ja)}</span></p>`;
   if (it.type === "kadai" || it.type === "point") h += `<p class="prompt small fz" lang="ja">${jpHTML(it.q)}</p>`;
   if (q.reveal && !a) h += transcriptHTML(q);
   return h;
 }
 function audioNote(){
-  if (!tts.ok) return "這個瀏覽器不支援語音朗讀，請按「顯示原文」用看的練習。";
-  if (!hasJa()) return "找不到日文語音（可能還在載入）。若一直沒聲音，請到系統設定加裝日文語音，或按「顯示原文」。";
-  return "用瀏覽器內建的日文語音朗讀，語調和真正考試會有差異；聽不清楚可以重播。";
+  if (!tts.ok) return tx("這個瀏覽器不支援語音朗讀，請按「顯示原文」用看的練習。", "このブラウザは音声の読み上げに対応していません。「スクリプトを表示」で読んで練習してください。");
+  if (!hasJa()) return tx("找不到日文語音（可能還在載入）。若一直沒聲音，請到系統設定加裝日文語音，或按「顯示原文」。", "日本語の音声が見つかりません（読み込み中かもしれません）。音が出ない場合は端末に日本語音声を追加するか、「スクリプトを表示」を使ってください。");
+  return tx("用瀏覽器內建的日文語音朗讀，語調和真正考試會有差異；聽不清楚可以重播。", "ブラウザの日本語音声で読み上げます。本番とはイントネーションが違います。聞き取れなければもう一度再生できます。");
 }
 function refreshAudioNote(){ const n = document.getElementById("anote"); if (n) n.textContent = audioNote(); }
 function optionsHTML(q, a){
@@ -1382,12 +1442,12 @@ function optionsHTML(q, a){
   const long = it.type === "iikae" || it.type === "yoho" || PASSAGE_TYPES.has(it.type) || it.type === "kadai" || it.type === "point";
   const short = !long && !spoken && q.order.every(k => plain(it.o[k]).length <= 8);
   return `<div class="opts${short ? " grid2" : ""}">` + q.order.map((k,i) => {
-    const txt = (spoken && !a && !q.reveal) ? `<span class="hid">（聽第 ${i+1} 個說法）</span>` : `<span lang="ja" class="fz">${jpHTML(it.o[k])}</span>`;
+    const txt = (spoken && !a && !q.reveal) ? `<span class="hid">${tx(`（聽第 ${i+1} 個說法）`, `（${i+1} 番目を聞く）`)}</span>` : `<span lang="ja" class="fz">${jpHTML(it.o[k])}</span>`;
     let cls = "opt" + (long ? " long" : "");
     let mk = "";
     if (a){
       if (a.pick === i) cls += " picked";
-      if (!quiz.exam){ if (k === 0){ cls += " right"; mk = "正解"; } else if (a.pick === i){ cls += " wrong"; mk = "你的答案"; } }
+      if (!quiz.exam){ if (k === 0){ cls += " right"; mk = tx("正解", "正解"); } else if (a.pick === i){ cls += " wrong"; mk = tx("你的答案", "あなたの答え"); } }
     }
     const tag = a ? "div" : "button";
     return `<${tag} class="${cls}"${a ? "" : ` data-act="pick" data-i="${i}"`}><span class="bub">${NUMS[i]}</span>${txt}<span class="mk">${mk}</span></${tag}>`;
@@ -1400,149 +1460,154 @@ function renderQuiz(anim, justPicked){
   const strip = quiz.items.map((x,i) => { const aa = quiz.answers[x.it.id]; let c = ""; if (i === quiz.i) c = "cur"; else if (aa) c = quiz.exam ? "done" : (aa.ok ? "ok" : "ng"); return `<i class="${c}">${i+1}</i>`; }).join("");
   let body = "";
   if (it.type === "yoho") body += `<p class="word" lang="ja">${jpHTML(it.p)}</p>`;
-  else if (it.type === "narabe" || it.type === "bunpo" || it.type === "bunmyaku" || it.type === "kanji" || it.type === "hyoki" || it.type === "iikae") body += `<p class="prompt fz" lang="ja">${jpHTML(it.p)}</p>`;
+  else if (["narabe","bunpo","bunmyaku","kanji","hyoki","iikae"].includes(it.type)) body += `<p class="prompt fz" lang="ja">${jpHTML(it.p)}</p>`;
   else if (PASSAGE_TYPES.has(it.type) && it.type !== "bunsho") body += `<p class="prompt small fz" lang="ja">${jpHTML(it.q)}</p>`;
   if (AUDIO_TYPES.has(it.type)) body = audioHTML(q, a) + body;
   body += optionsHTML(q, a);
   if (a && !quiz.exam) body += explainHTML(q, a);
-  const head = `<div class="qnum"><span class="ptag">${T.no} ${T.name}</span><span>${esc(T.inst)}</span><button class="btn-ghost furi-btn" data-act="furi" aria-pressed="${store.furi ? "true" : "false"}">假名</button></div>`;
+  const head = `<div class="qnum"><span class="ptag" lang="ja">${T.no} ${T.name}</span><span>${esc(L2(T.inst))}</span><button class="btn-ghost furi-btn" data-act="furi" aria-pressed="${store.furi ? "true" : "false"}">${tx("假名", "ふりがな")}</button></div>`;
   const last = quiz.i === quiz.items.length - 1;
-  const nav = a ? `<div class="qnav"><button class="btn" data-act="next" id="nextbtn">${last ? (quiz.exam ? "交卷看結果" : "看結果") : "下一題"}</button></div>` :
-                  (quiz.exam ? `<div class="qnav"><button class="btn alt" data-act="skip">${last ? "交卷" : "先跳過"}</button></div>` : "");
-  $app.innerHTML = `
-    <div class="qtop"><button class="btn-ghost" data-act="home">‹ 首頁</button><div class="qtitle">${esc(quiz.title)}</div>
+  const nav = a ? `<div class="qnav"><button class="btn" data-act="next" id="nextbtn">${last ? (quiz.exam ? tx("交卷看結果", "提出して結果を見る") : tx("看結果", "結果を見る")) : tx("下一題", "次へ")}</button></div>` :
+                  (quiz.exam ? `<div class="qnav"><button class="btn alt" data-act="skip">${last ? tx("交卷", "提出") : tx("先跳過", "とばす")}</button></div>` : "");
+  $app.innerHTML = `${prefsHTML()}
+    <div class="qtop">${back()}<div class="qtitle" lang="ja">${esc(quizTitle())}</div>
       <div class="qcount">${quiz.exam ? `<span class="tl" id="clock">${mmss(Date.now() - quiz.start)}</span>` : ""}${quiz.i+1}/${quiz.items.length}</div></div>
     <div class="strip" aria-hidden="true">${strip}</div>
     <section class="sheet qcard${it.passage ? " has-p" : ""}">${it.passage ? passageHTML(it) : ""}<div>${head}${body}</div></section>
     ${nav}
-    <p class="kbd">鍵盤：<kbd>1</kbd>–<kbd>4</kbd> 作答　<kbd>Enter</kbd> 下一題${AUDIO_TYPES.has(it.type) ? "　<kbd>空白鍵</kbd> 播放" : ""}</p>`;
+    <p class="kbd">${tx("鍵盤：", "キー：")}<kbd>1</kbd>–<kbd>4</kbd> ${tx("作答", "で解答")}　<kbd>Enter</kbd> ${tx("下一題", "で次へ")}${AUDIO_TYPES.has(it.type) ? `　<kbd>${tx("空白鍵", "スペース")}</kbd> ${tx("播放", "で再生")}` : ""}</p>`;
   if (justPicked && !reduceMotion){ const p = $app.querySelector(".opt.picked"); if (p) p.classList.add("anim"); }
   if (justPicked){ const nb = document.getElementById("nextbtn"); if (nb) nb.focus({preventScroll:true}); const ex = $app.querySelector(".explain"); if (ex && ex.getBoundingClientRect().top > innerHeight - 80) ex.scrollIntoView({behavior: reduceMotion ? "auto" : "smooth", block:"nearest"}); }
-  if (anim && AUDIO_TYPES.has(it.type) && hasJa() && !a) setTimeout(() => { if (cur() === q && !quiz.answers[it.id]) speakSeq(audioParts(it, q.order)); }, 350);
+  if (anim && AUDIO_TYPES.has(it.type) && hasJa() && !a) setTimeout(() => { if (quiz && cur() === q && !quiz.answers[it.id]) speakSeq(audioParts(it, q.order)); }, 350);
 }
 
 /* ---------------- Render: result ---------------- */
 function snippet(it){
-  if (it.type === "kadai" || it.type === "point") return plain(it.q);
-  if (it.type === "hatsuwa") return it.sit;
-  if (it.type === "sokuji") return plain(it.line[1]);
-  if (it.passage) return (it.q ? plain(it.q) : `${plain(it.passage.title || "文章")}（${it.qi}）`);
-  return plain(it.p);
+  if (it.type === "kadai" || it.type === "point") return [plain(it.q), "ja"];
+  if (it.type === "hatsuwa") return [it.sit, "zh-Hant"];
+  if (it.type === "sokuji") return [plain(it.line[1]), "ja"];
+  if (it.passage) return [it.q ? plain(it.q) : `${plain(it.passage.title || "文章")}（${it.qi}）`, "ja"];
+  return [plain(it.p), "ja"];
 }
-function renderResult(){
+function renderResult(first){
   view = "result"; $app.dataset.view = view;
   const list = quiz.items, n = list.length;
-  const ok = list.filter(x => quiz.answers[x.it.id] && quiz.answers[x.it.id].ok).length;
+  const isOk = x => !!(quiz.answers[x.it.id] && quiz.answers[x.it.id].ok);
+  const ok = list.filter(isOk).length;
   const pct = Math.round(ok / n * 100);
-  const bySec = {};
-  list.forEach(x => { const s = TYPES[x.it.type].sec === "chokai" ? "聴解" : "言語知識・読解"; bySec[s] = bySec[s] || [0,0]; bySec[s][1]++; if (quiz.answers[x.it.id] && quiz.answers[x.it.id].ok) bySec[s][0]++; });
-  const byType = {};
-  list.forEach(x => { const t = x.it.type; byType[t] = byType[t] || [0,0]; byType[t][1]++; if (quiz.answers[x.it.id] && quiz.answers[x.it.id].ok) byType[t][0]++; });
-  let msg = pct >= 80 ? "很穩，考前保持手感就好" : pct >= 60 ? "及格邊緣以上，把錯題再看一次" : "先別慌，錯題本會幫你收好";
-  if (quiz.mode === "mock"){
-    const prev = store.best; if (!prev || pct > prev.pct){ store.best = {pct, at: Date.now()}; save(); }
-  }
+  const bySec = {}, byType = {};
+  list.forEach(x => {
+    const s = TYPES[x.it.type].sec === "chokai" ? "聴解" : "言語知識・読解", t = x.it.type;
+    bySec[s] = bySec[s] || [0,0]; bySec[s][1]++; byType[t] = byType[t] || [0,0]; byType[t][1]++;
+    if (isOk(x)){ bySec[s][0]++; byType[t][0]++; }
+  });
+  const msg = pct >= 80 ? tx("很穩，考前保持手感就好", "安定しています。この調子で！") : pct >= 60 ? tx("及格邊緣以上，把錯題再看一次", "合格ライン以上。間違えた問題をもう一度") : tx("先別慌，錯題本會幫你收好", "大丈夫、間違えた問題はリストに残っています");
+  if (first && quiz.mode === "mock"){ const prev = store.best; if (!prev || pct > prev.pct){ store.best = {pct, at: Date.now()}; save(); } }
+  if (first) quiz.end = Date.now();
   const wrongN = n - ok;
-  $app.innerHTML = `
-    <div class="qtop"><button class="btn-ghost" data-act="home">‹ 首頁</button><div class="qtitle">${esc(quiz.title)}・結果</div></div>
+  $app.innerHTML = `${prefsHTML()}
+    <div class="qtop">${back()}<div class="qtitle" lang="ja">${esc(quizTitle())}・${tx("結果", "結果")}</div></div>
     <section class="sheet">
-      <div class="score"><div class="big">${ok}<small>/${n}</small></div><div class="msg2"><b>${msg}</b><span>正確率 ${pct}%${quiz.exam ? `・用時 ${mmss(Date.now() - quiz.start)}` : ""}</span></div></div>
+      <div class="score"><div class="big">${ok}<small>/${n}</small></div><div class="msg2"><b>${msg}</b><span>${tx("正確率", "正答率")} ${pct}%${quiz.exam ? `・${tx("用時", "所要時間")} ${mmss((quiz.end || Date.now()) - quiz.start)}` : ""}</span></div></div>
       ${Object.keys(bySec).length > 1 ? `<div class="parts">${Object.entries(bySec).map(([k,v]) => `<span><em lang="ja">${k}</em> ${v[0]}/${v[1]}</span>`).join("")}</div>` : ""}
       <div class="parts">${Object.entries(byType).map(([t,v]) => `<span><em lang="ja">${TYPES[t].name}</em> ${v[0]}/${v[1]}</span>`).join("")}</div>
-      ${quiz.mode === "mock" ? `<p class="note" style="padding:12px 16px 0;margin:0">正式考試合格要總分 90/180，而且「言語知識・讀解」至少 38/120、「聽解」至少 19/60。這裡的題目是自編的，正確率只能當參考，不能換算成正式分數。</p>` : ""}
+      ${quiz.mode === "mock" ? `<p class="note" style="padding:12px 16px 0;margin:0">${tx("正式考試合格要總分 90/180，而且「言語知識・讀解」至少 38/120、「聽解」至少 19/60。這裡的題目是自編的，正確率只能當參考，不能換算成正式分數。", "本番の合格には総合得点 90/180 以上、かつ「言語知識・読解」38/120 以上、「聴解」19/60 以上が必要です。ここの問題はオリジナルなので、正答率は目安です。本番の得点には換算できません。")}</p>` : ""}
       <div class="qnav" style="padding:14px 16px">
-        ${wrongN ? `<button class="btn alt" data-act="retry">重練這次的錯題（${wrongN}）</button>` : ""}
-        <button class="btn" data-act="again">${quiz.mode === "mock" ? "再考一次" : "再練 10 題"}</button>
+        ${wrongN ? `<button class="btn alt" data-act="retry">${tx(`重練這次的錯題（${wrongN}）`, `今回の間違いを復習（${wrongN}）`)}</button>` : ""}
+        <button class="btn" data-act="again">${quiz.mode === "mock" ? tx("再考一次", "もう一度受ける") : tx("再練 10 題", "もう 10 問")}</button>
       </div>
     </section>
-    <section class="sheet"><div class="sec-head">逐題檢討<small>點一題看解析</small></div><div class="rlist">
-      ${list.map((x,i) => { const a = quiz.answers[x.it.id]; const g = a ? (a.ok ? "ok" : "ng") : "ng";
-        return `<details><summary><span class="g ${g}">${a && a.ok ? "○" : "×"}</span><span class="s"><em>${esc(TYPES[x.it.type].name)}</em><span lang="ja">${esc(snippet(x.it))}</span></span><span class="r">${i+1}</span></summary>
-        <div class="rx">${a ? "" : `<p class="zh">沒有作答</p>`}${explainHTML(x, a || {ok:false, pick:-1}).replace('<div class="explain">','<div>')}</div></details>`; }).join("")}
+    <section class="sheet"><div class="sec-head">${tx("逐題檢討", "解答の確認")}<small>${tx("點一題看解析", "タップで解説")}</small></div><div class="rlist">
+      ${list.map((x,i) => { const a = quiz.answers[x.it.id]; const g = a && a.ok ? "ok" : "ng"; const [sn, sl] = snippet(x.it);
+        return `<details><summary><span class="g ${g}">${a && a.ok ? "○" : "×"}</span><span class="s"><em lang="ja">${esc(TYPES[x.it.type].name)}</em><span lang="${sl}">${esc(sn)}</span></span><span class="r">${i+1}</span></summary>
+        <div class="rx">${a ? "" : `<p class="zh">${tx("沒有作答", "未解答")}</p>`}${explainHTML(x, a || {ok:false, pick:-1}).replace('<div class="explain">','<div>')}</div></details>`; }).join("")}
     </div></section>`;
-  window.scrollTo(0,0);
+  if (first) window.scrollTo(0,0);
 }
 
 /* ---------------- Render: home ---------------- */
 function daysLeft(){ const ms = EXAM.start - Date.now(); return Math.ceil(ms / 86400000); }
+function examLabel(){ return tx("2026/12/6（日）", "2026年12月6日（日）"); }
 function countHTML(){
   const d = daysLeft();
-  if (d > 0) return `<div class="count"><small>距離考試</small><b>${d}</b><span>日</span></div>`;
-  if (d > -1) return `<div class="count today"><small>今天考試</small><b lang="ja">がんばって！</b></div>`;
-  return `<div class="count today"><small>12/6 考試已結束</small><b>成績公布請看 LTTC</b></div>`;
+  if (d > 0) return `<div class="count"><small>${tx("距離考試", "試験まで")}</small><b>${d}</b><span>${tx("日", "日")}</span></div>`;
+  if (d > -1) return `<div class="count today"><small>${tx("今天考試", "今日は試験日")}</small><b lang="ja">がんばって！</b></div>`;
+  return `<div class="count today"><small>${tx("12/6 考試已結束", "12/6 の試験は終了")}</small><b>${tx("成績公布請看 LTTC", "結果は LTTC で確認")}</b></div>`;
 }
 function typeStats(types){
   let seen = 0, total = 0, r = 0, all = 0;
   types.forEach(t => BY_TYPE[t].forEach(it => { total++; const s = statOf(it.id); if (s){ seen++; r += s.r; all += s.r + s.w; } }));
   return {seen, total, acc: all ? Math.round(r / all * 100) : null};
 }
+/* [key, [中文標題, 中文說明], [日文標題, 日文說明]] */
 const CHECKS = [
-  ["ticket","准考證（應試通知）","台灣考區 11/16 已用平信郵簡寄出；還沒收到就打 LTTC (02) 2365-5050 問"],
-  ["id","身分證件正本","帶准考證上規定的那一種"],
-  ["pencil","鉛筆和橡皮擦","種類照准考證上的應試規則；多帶一支"],
-  ["watch","手錶","智慧型手錶等通訊設備不能當手錶用，以准考證規定為準"],
-  ["route","確認考場和入場時間","入場時間、教室寫在准考證上；提早到"],
-  ["sleep","前一晚早點睡","只看「文法速查」和錯題本，不再背新東西"]
+  ["ticket", ["准考證（應試通知）","台灣考區 11/16 已用平信郵簡寄出；還沒收到就打 LTTC (02) 2365-5050 問"], ["受験票","台湾会場は 11/16 に普通郵便で発送済み。届いていなければ LTTC (02) 2365-5050 へ"]],
+  ["id",     ["身分證件正本","帶准考證上規定的那一種"], ["身分証明書（原本）","受験票で指定されたもの"]],
+  ["pencil", ["鉛筆和橡皮擦","種類照准考證上的應試規則；多帶一支"], ["鉛筆と消しゴム","種類は受験票の受験規則のとおりに。予備も一本"]],
+  ["watch",  ["手錶","智慧型手錶等通訊設備不能當手錶用，以准考證規定為準"], ["腕時計","スマートウォッチなど通信機器は時計として使えません。受験票の規定を確認"]],
+  ["route",  ["確認考場和入場時間","入場時間、教室寫在准考證上；提早到"], ["会場と集合時間の確認","集合時間と教室は受験票に記載。早めに到着"]],
+  ["sleep",  ["前一晚早點睡","只看「文法速查」和錯題本，不再背新東西"], ["前日は早く寝る","「文法一覧」と間違えた問題だけ見て、新しいことは覚えない"]]
 ];
 const TIPS = [
-  "<b>每題都要劃</b>：答錯不倒扣，不會就選最像的，不要空著。",
-  "<b>文字・語彙 25 分</b>：會的先做，不會的不要卡；表記題先想「這個字怎麼讀」。",
-  "<b>文法・讀解 55 分</b>：文法看空格前後的接續，快做；至少留 25 分鐘給讀解。",
-  "<b>讀解</b>：先看問題再回文章找；看到「でも」「しかし」後面常是重點。",
-  "<b>聽解 35 分</b>：先看選項；答案常在「じゃあ」「やっぱり」「でも」之後；錯過一題就放掉，專心下一題。"
+  ["<b>每題都要劃</b>：答錯不倒扣，不會就選最像的，不要空著。", "<b>全部マークする</b>：間違えても減点なし。わからなくても一番近いものを選び、空欄にしない。"],
+  ["<b>文字・語彙 25 分</b>：會的先做，不會的不要卡；表記題先想「這個字怎麼讀」。", "<b>文字・語彙 25 分</b>：わかる問題から。迷ったら止まらない。表記は「どう読むか」を先に考える。"],
+  ["<b>文法・讀解 55 分</b>：文法看空格前後的接續，快做；至少留 25 分鐘給讀解。", "<b>文法・読解 55 分</b>：文法は空欄の前後の接続を見て素早く。読解に 25 分以上残す。"],
+  ["<b>讀解</b>：先看問題再回文章找；看到「でも」「しかし」後面常是重點。", "<b>読解</b>：先に質問を読み、本文から答えを探す。「でも」「しかし」の後が大事なことが多い。"],
+  ["<b>聽解 35 分</b>：先看選項；答案常在「じゃあ」「やっぱり」「でも」之後；錯過一題就放掉，專心下一題。", "<b>聴解 35 分</b>：先に選択肢を見る。答えは「じゃあ」「やっぱり」「でも」の後に来ることが多い。聞き逃したら次の問題に集中。"]
 ];
 function renderHome(){
   view = "home"; $app.dataset.view = view; quiz = null;
   const acc = store.answered ? Math.round(store.correct / store.answered * 100) + "%" : "—";
   const deco = ["日","本","語","Ｎ","４"].map((c,i) => `<i class="${i === 4 && !reduceMotion ? "on" : ""}" ${i === 4 && reduceMotion ? 'style="background:var(--lead);color:var(--lead-ink);border-color:var(--lead)"' : ""} lang="ja">${c}</i>`).join("");
-  const secRow = (s) => { const st = typeStats(SEC_TYPES[s]); return `<button class="mode" data-act="sec" data-s="${s}"><span class="tag" lang="ja">${SECS[s].short}<small>${SECS[s].time.replace("與讀解共 ","").replace("與文法共 ","")}</small></span><span><b>${SECS[s].zh}練習</b><span class="desc">${SECS[s].desc}・做過 ${st.seen}/${st.total}</span></span><span class="go">選題型 ›</span></button>`; };
+  const secRow = (s) => { const S = SECS[s], st = typeStats(SEC_TYPES[s]); return `<button class="mode" data-act="sec" data-s="${s}"><span class="tag" lang="ja">${S.short}<small>${S.mins} ${tx("分", "分")}</small></span><span><b>${tx(`${S.d[0]}練習`, `${S.d[1]}の練習`)}</b><span class="desc">${esc(L2(S.desc))}・${tx("做過", "解答済み")} ${st.seen}/${st.total}</span></span><span class="go">${tx("選題型 ›", "形式を選ぶ ›")}</span></button>`; };
   const nWrong = store.wrong.length, nVocab = VOCAB.length, nKnown = VOCAB.filter(v => store.known[v.k]).length;
-  $app.innerHTML = `
+  $app.innerHTML = `${prefsHTML()}
   <div class="home-main">
     <header class="sheet mast">
-      <div class="mast-band"><span lang="ja">日本語能力試験 Ｎ４</span><span>${EXAM.label}</span></div>
-      <div class="mast-body"><div><div class="deco" aria-hidden="true">${deco}</div><h1>日檢 N4 考前衝刺</h1><p>自編練習題，每題附中文翻譯和解析。</p></div>${countHTML()}</div>
-      <div class="stats"><div class="stat"><span>已作答</span><b>${store.answered}</b></div><div class="stat"><span>正確率</span><b>${acc}</b></div><div class="stat"><span>錯題本</span><b>${nWrong}</b></div></div>
+      <div class="mast-band"><span lang="ja">日本語能力試験 Ｎ４</span><span>${examLabel()}</span></div>
+      <div class="mast-body"><div><div class="deco" aria-hidden="true">${deco}</div><h1>${tx("日檢 N4 考前衝刺", "JLPT N4 直前対策")}</h1><p>${tx("自編練習題，每題附中文翻譯和解析。", "オリジナル練習問題。全問に中国語訳と解説つき。")}</p></div>${countHTML()}</div>
+      <div class="stats"><div class="stat"><span>${tx("已作答", "解答数")}</span><b>${store.answered}</b></div><div class="stat"><span>${tx("正確率", "正答率")}</span><b>${acc}</b></div><div class="stat"><span>${tx("錯題本", "間違い")}</span><b>${nWrong}</b></div></div>
     </header>
-    <section class="sheet"><div class="sec-head">練習模式<small>共 ${ALL_IDS.length} 題</small></div><div class="modes">
-      <button class="mode primary" data-act="mock"><span class="tag" lang="ja">模擬<small>約 25 題</small></span><span><b>迷你模考</b><span class="desc">照正式順序：語彙 → 文法 → 讀解${tts.ok ? " → 聽解" : ""}，交卷後才看解析${store.best ? `・最佳 ${store.best.pct}%` : ""}</span></span><span class="go">開始 ›</span></button>
+    <section class="sheet"><div class="sec-head">${tx("練習模式", "練習メニュー")}<small>${tx(`共 ${ALL_IDS.length} 題`, `全 ${ALL_IDS.length} 問`)}</small></div><div class="modes">
+      <button class="mode primary" data-act="mock"><span class="tag" lang="ja">模擬<small>${tx("約 25 題", "約 25 問")}</small></span><span><b>${tx("迷你模考", "ミニ模試")}</b><span class="desc">${tx(`照正式順序：語彙 → 文法 → 讀解${tts.ok ? " → 聽解" : ""}，交卷後才看解析`, `本番と同じ順番：語彙 → 文法 → 読解${tts.ok ? " → 聴解" : ""}。解説は提出後に表示`)}${store.best ? `・${tx("最佳", "ベスト")} ${store.best.pct}%` : ""}</span></span><span class="go">${tx("開始 ›", "スタート ›")}</span></button>
       ${secRow("goi")}${secRow("bunpo")}${secRow("dokkai")}${secRow("chokai")}
-      <button class="mode" data-act="cards"><span class="tag" lang="ja">単語<small>${nVocab} 個</small></span><span><b>單字卡</b><span class="desc">N4 常考單字，看漢字想讀音和意思・記住 ${nKnown}</span></span><span class="go">翻卡 ›</span></button>
-      <button class="mode" data-act="grammar"><span class="tag" lang="ja">速査<small>${GRAMMAR.length} 條</small></span><span><b>文法速查</b><span class="desc">意思、接續、例句和易錯提醒，可搜尋</span></span><span class="go">查看 ›</span></button>
-      <button class="mode" data-act="wrong" ${nWrong ? "" : "disabled"}><span class="tag" lang="ja">錯題<small>${nWrong} 題</small></span><span><b>錯題本</b><span class="desc">${nWrong ? "答對一次就會從錯題本拿掉" : "目前沒有錯題"}</span></span><span class="go">重練 ›</span></button>
-      <button class="mode" data-act="info"><span class="tag" lang="ja">試験<small>${EXAM.label.slice(5)}</small></span><span><b>考試資訊</b><span class="desc">科目時間、題型、合格標準、台灣考區公告</span></span><span class="go">查看 ›</span></button>
+      <button class="mode" data-act="cards"><span class="tag" lang="ja">単語<small>${tx(`${nVocab} 個`, `${nVocab} 語`)}</small></span><span><b>${tx("單字卡", "単語カード")}</b><span class="desc">${tx(`N4 常考單字，看漢字想讀音和意思・記住 ${nKnown}`, `N4 頻出単語。漢字から読みと意味を思い出す・覚えた ${nKnown}`)}</span></span><span class="go">${tx("翻卡 ›", "めくる ›")}</span></button>
+      <button class="mode" data-act="grammar"><span class="tag" lang="ja">${tx("速査", "一覧")}<small>${tx(`${GRAMMAR.length} 條`, `${GRAMMAR.length} 項目`)}</small></span><span><b>${tx("文法速查", "文法一覧")}</b><span class="desc">${tx("意思、接續、例句和易錯提醒，可搜尋", "意味・接続・例文・注意点。検索できます")}</span></span><span class="go">${tx("查看 ›", "見る ›")}</span></button>
+      <button class="mode" data-act="wrong" ${nWrong ? "" : "disabled"}><span class="tag" lang="ja">${tx("錯題", "復習")}<small>${tx(`${nWrong} 題`, `${nWrong} 問`)}</small></span><span><b>${tx("錯題本", "間違えた問題")}</b><span class="desc">${nWrong ? tx("答對一次就會從錯題本拿掉", "一度正解するとリストから消えます") : tx("目前沒有錯題", "今は間違えた問題はありません")}</span></span><span class="go">${tx("重練 ›", "復習 ›")}</span></button>
+      <button class="mode" data-act="info"><span class="tag" lang="ja">試験<small>12/6</small></span><span><b>${tx("考試資訊", "試験情報")}</b><span class="desc">${tx("科目時間、題型、合格標準、台灣考區公告", "試験時間・問題形式・合格基準・台湾会場のお知らせ")}</span></span><span class="go">${tx("查看 ›", "見る ›")}</span></button>
     </div></section>
     <section class="sheet">
-      <div class="opt-row"><div><strong>題目顯示假名</strong><p>在漢字上面標讀音。正式考試不會標，熟了就關掉。</p></div><label class="switch"><input type="checkbox" data-act="furi-sw" ${store.furi ? "checked" : ""}><span class="track"></span></label></div>
+      <div class="opt-row"><div><strong>${tx("題目顯示假名", "問題にふりがなを表示")}</strong><p>${tx("在漢字上面標讀音。正式考試不會標，熟了就關掉。", "漢字の上に読みを表示します。本番の試験にはないので、慣れたらオフに。")}</p></div><label class="switch"><input type="checkbox" data-act="furi-sw" ${store.furi ? "checked" : ""}><span class="track"></span></label></div>
     </section>
   </div>
   <div class="home-side">
-    <section class="sheet"><div class="sec-head">考前清單<small>點一下打勾</small></div><ul class="check">
-      ${CHECKS.map(([k,t,s]) => `<li><label><input type="checkbox" data-act="check" data-k="${k}" ${store.checks[k] ? "checked" : ""}><span>${esc(t)}<small>${esc(s)}</small></span></label></li>`).join("")}
+    <section class="sheet"><div class="sec-head">${tx("考前清單", "持ち物・準備チェック")}<small>${tx("點一下打勾", "タップでチェック")}</small></div><ul class="check">
+      ${CHECKS.map(([k,z,j]) => { const [t,s] = lang === "ja" ? j : z; return `<li><label><input type="checkbox" data-act="check" data-k="${k}" ${store.checks[k] ? "checked" : ""}><span>${esc(t)}<small>${esc(s)}</small></span></label></li>`; }).join("")}
     </ul></section>
-    <section class="sheet"><div class="sec-head">考場策略</div><ol class="tips">${TIPS.map(t => `<li>${t.replace(/「([^」]+)」/g, '<span lang="ja">「$1」</span>')}</li>`).join("")}</ol></section>
-    <section class="sheet"><div class="pad" style="font-size:14px;color:var(--muted)"><p>練習紀錄只存在這個瀏覽器，不會上傳。</p><p><button class="btn-ghost" data-act="reset">清除練習紀錄</button></p></div></section>
+    <section class="sheet"><div class="sec-head">${tx("考場策略", "試験のコツ")}</div><ol class="tips">${TIPS.map(t => `<li>${lang === "ja" ? L2(t) : L2(t).replace(/「([^」]+)」/g, '<span lang="ja">「$1」</span>')}</li>`).join("")}</ol></section>
+    <section class="sheet"><div class="pad" style="font-size:14px;color:var(--muted)"><p>${tx("練習紀錄只存在這個瀏覽器，不會上傳。", "記録はこのブラウザだけに保存され、送信されません。")}</p><p><button class="btn-ghost" data-act="reset">${tx("清除練習紀錄", "記録をリセット")}</button></p></div></section>
   </div>`;
 }
 
 /* ---------------- Render: section picker ---------------- */
 function renderSec(s){
-  view = "sec"; $app.dataset.view = view;
-  const st = typeStats(SEC_TYPES[s]);
+  view = "sec"; curSec = s; $app.dataset.view = view;
+  const S = SECS[s];
   const row = t => { const T = TYPES[t], x = typeStats([t]); const pct = x.total ? Math.round(x.seen / x.total * 100) : 0;
-    return `<div class="trow"><div><b><small>${T.no}</small>${T.name}</b><span>${esc(T.zh)}・${x.total} 題・做過 ${x.seen}${x.acc != null ? `・答對率 ${x.acc}%` : ""}</span><div class="meter"><i style="width:${pct}%"></i></div></div><button class="btn sm" data-act="type" data-t="${t}">練習</button></div>`; };
-  $app.innerHTML = `
-    <div class="qtop"><button class="btn-ghost" data-act="home">‹ 首頁</button><div class="qtitle" lang="ja">${SECS[s].name}</div></div>
-    <section class="sheet"><div class="sec-head"><span lang="ja">${SECS[s].name}</span><small>正式考試 ${SECS[s].time}</small></div>
+    return `<div class="trow"><div><b lang="ja"><small>${T.no}</small>${T.name}</b><span>${esc(L2(T.d))}・${tx(`${x.total} 題・做過 ${x.seen}`, `${x.total} 問・解答済み ${x.seen}`)}${x.acc != null ? `・${tx("答對率", "正答率")} ${x.acc}%` : ""}</span><div class="meter"><i style="width:${pct}%"></i></div></div><button class="btn sm" data-act="type" data-t="${t}">${tx("練習", "練習")}</button></div>`; };
+  $app.innerHTML = `${prefsHTML()}
+    <div class="qtop">${back()}<div class="qtitle" lang="ja">${S.name}</div></div>
+    <section class="sheet"><div class="sec-head"><span lang="ja">${S.name}</span><small>${tx("正式考試", "本番")} ${L2(S.time)}</small></div>
       ${SEC_TYPES[s].map(row).join("")}
-      <div class="trow"><div><b>全部混合</b><span>從這一科隨機出 10 題，沒做過的優先</span></div><button class="btn sm" data-act="secmix" data-s="${s}">開始</button></div>
+      <div class="trow"><div><b>${tx("全部混合", "ミックス")}</b><span>${tx("從這一科隨機出 10 題，沒做過的優先", "この科目からランダムに出題（未解答を優先）")}</span></div><button class="btn sm" data-act="secmix" data-s="${s}">${tx("開始", "スタート")}</button></div>
     </section>
-    ${s === "chokai" ? `<section class="sheet"><div class="pad" style="font-size:14px;color:var(--muted)"><p>聽解用瀏覽器內建的日文語音念題目${hasJa() ? "" : "（這台裝置目前沒偵測到日文語音）"}。手機要先關掉靜音模式；沒有日文語音時可以按「顯示原文」用讀的練習。</p><p>正式考試的「發話表現」會看圖，這裡改用文字描述情境。</p></div></section>` : ""}`;
-  window.scrollTo(0,0);
+    ${s === "chokai" ? `<section class="sheet"><div class="pad" style="font-size:14px;color:var(--muted)"><p>${tx(`聽解用瀏覽器內建的日文語音念題目${hasJa() ? "" : "（這台裝置目前沒偵測到日文語音）"}。手機要先關掉靜音模式；沒有日文語音時可以按「顯示原文」用讀的練習。`, `聴解はブラウザの日本語音声で読み上げます${hasJa() ? "" : "（この端末では日本語音声が見つかりません）"}。スマホはマナーモードを解除してください。日本語音声がない場合は「スクリプトを表示」で読んで練習できます。`)}</p><p>${tx("正式考試的「發話表現」會看圖，這裡改用文字描述情境。", "本番の「発話表現」はイラストを見ますが、ここでは場面を文章で説明しています。")}</p></div></section>` : ""}`;
 }
 
 /* ---------------- Render: flashcards ---------------- */
 const VCATS = ["全部","還不熟","動詞","い形容詞","な形容詞","名詞","副詞・其他","外來語"];
+const VCAT_JA = {"全部":"すべて","還不熟":"まだ","動詞":"動詞","い形容詞":"い形容詞","な形容詞":"な形容詞","名詞":"名詞","副詞・其他":"副詞・その他","外來語":"外来語"};
+const POS_JA = {"外來語":"外来語","接續詞":"接続詞"};
 function vocabIn(cat){
   if (cat === "全部") return VOCAB;
   if (cat === "還不熟") return VOCAB.filter(v => !store.known[v.k]);
@@ -1551,22 +1616,23 @@ function vocabIn(cat){
 function startCards(cat){ deck = {cat, cards: shuffle(vocabIn(cat)), i: 0, flipped: false, knew: 0}; renderCards(); }
 function renderCards(){
   view = "cards"; $app.dataset.view = view;
-  const chips = VCATS.map(c => `<button class="chip" data-act="vcat" data-c="${c}" aria-pressed="${deck.cat === c}">${c}<small>${vocabIn(c).length}</small></button>`).join("");
-  const top = `<div class="qtop"><button class="btn-ghost" data-act="home">‹ 首頁</button><div class="qtitle">單字卡</div><div class="qcount">${Math.min(deck.i+1, deck.cards.length)}/${deck.cards.length}</div></div><div class="chips">${chips}</div>`;
+  const chips = VCATS.map(c => `<button class="chip" data-act="vcat" data-c="${c}" aria-pressed="${deck.cat === c}">${esc(tx(c, VCAT_JA[c]))}<small>${vocabIn(c).length}</small></button>`).join("");
+  const top = `${prefsHTML()}<div class="qtop">${back()}<div class="qtitle">${tx("單字卡", "単語カード")}</div><div class="qcount">${Math.min(deck.i+1, deck.cards.length)}/${deck.cards.length}</div></div><div class="chips">${chips}</div>`;
   if (!deck.cards.length || deck.i >= deck.cards.length){
-    $app.innerHTML = `${top}<section class="sheet done-card"><p><b>${deck.cards.length ? "這一疊翻完了" : "這一類沒有卡片"}</b></p><p class="hint">這輪記住 ${deck.knew} 個・總共記住 ${VOCAB.filter(v => store.known[v.k]).length}/${VOCAB.length}</p><div class="row"><button class="btn" data-act="vcat" data-c="還不熟">只翻還不熟的</button><button class="btn alt" data-act="vcat" data-c="${deck.cat}">這疊再一輪</button></div></section>`;
+    const total = VOCAB.filter(v => store.known[v.k]).length;
+    $app.innerHTML = `${top}<section class="sheet done-card"><p><b>${deck.cards.length ? tx("這一疊翻完了", "このセットは終わりです") : tx("這一類沒有卡片", "カードがありません")}</b></p><p class="hint">${tx(`這輪記住 ${deck.knew} 個・總共記住 ${total}/${VOCAB.length}`, `今回覚えた ${deck.knew} 語・合計 ${total}/${VOCAB.length} 語`)}</p><div class="row"><button class="btn" data-act="vcat" data-c="還不熟">${tx("只翻還不熟的", "まだのカードだけ")}</button><button class="btn alt" data-act="vcat" data-c="${deck.cat}">${tx("這疊再一輪", "もう一周")}</button></div></section>`;
     return;
   }
   const v = deck.cards[deck.i];
   const pct = Math.round(deck.i / deck.cards.length * 100);
-  const back = deck.flipped ? `${v.r !== v.k ? `<div class="fread" lang="ja">${esc(v.r)}</div>` : ""}<div class="fzh">${esc(v.zh)}</div><div class="fex" lang="ja">${jpHTML(v.ex)}<small>${esc(v.exzh)}</small></div>` : `<div class="hint">先想讀音和意思，點卡片翻面</div>`;
+  const backFace = deck.flipped ? `${v.r !== v.k ? `<div class="fread" lang="ja">${esc(v.r)}</div>` : ""}<div class="fzh"${ZH}>${esc(v.zh)}</div><div class="fex"><span lang="ja">${jpHTML(v.ex)}</span><small${ZH}>${esc(v.exzh)}</small></div>` : `<div class="hint">${tx("先想讀音和意思，點卡片翻面", "読みと意味を考えてから、タップでめくる")}</div>`;
   $app.innerHTML = `${top}<div class="bar"><i style="width:${pct}%"></i></div>
-    <section class="sheet fcard" data-act="flip" role="button" tabindex="0" aria-label="翻面">
-      ${tts.ok ? `<button class="say" data-act="sayv" aria-label="念出來">${ICON_SPEAK}</button>` : ""}
-      <div class="fpos">${esc(v.pos)}${store.known[v.k] ? "・已記住" : ""}</div><div class="fword" lang="ja">${esc(v.k)}</div>${back}
+    <section class="sheet fcard" data-act="flip" role="button" tabindex="0" aria-label="${tx("翻面", "めくる")}">
+      ${tts.ok ? `<button class="say" data-act="sayv" aria-label="${tx("念出來", "読み上げ")}">${ICON_SPEAK}</button>` : ""}
+      <div class="fpos" lang="ja">${esc(lang === "ja" ? (POS_JA[v.pos] || v.pos) : v.pos)}${store.known[v.k] ? tx("・已記住", "・覚えた") : ""}</div><div class="fword" lang="ja">${esc(v.k)}</div>${backFace}
     </section>
-    <div class="cbtns"><button class="btn alt" data-act="unknown">還不熟</button><button class="btn" data-act="known">記住了</button></div>
-    <p class="kbd" style="text-align:center"><kbd>空白鍵</kbd> 翻面　<kbd>←</kbd> 還不熟　<kbd>→</kbd> 記住了</p>`;
+    <div class="cbtns"><button class="btn alt" data-act="unknown">${tx("還不熟", "まだ")}</button><button class="btn" data-act="known">${tx("記住了", "覚えた")}</button></div>
+    <p class="kbd" style="text-align:center"><kbd>${tx("空白鍵", "スペース")}</kbd> ${tx("翻面", "めくる")}　<kbd>←</kbd> ${tx("還不熟", "まだ")}　<kbd>→</kbd> ${tx("記住了", "覚えた")}</p>`;
 }
 function cardAnswer(knew){
   const v = deck.cards[deck.i]; if (!v) return;
@@ -1576,96 +1642,116 @@ function cardAnswer(knew){
 
 /* ---------------- Render: grammar reference ---------------- */
 const GCATS = ["全部", ...[...new Set(GRAMMAR.map(g => g.cat))]];
+const GCAT_JA = {"全部":"すべて","授受":"授受表現","被動・使役":"受身・使役","推測・樣態":"推量・様態","條件":"条件","逆接・讓步":"逆接・譲歩","時間・狀態":"時間・状態","目的・原因":"目的・原因","變化・決定":"変化・決定","許可・義務":"許可・義務","比較・程度":"比較・程度","敬語":"敬語","其他":"その他"};
+const gcat = c => esc(tx(c, GCAT_JA[c] || c));
 function renderGrammar(keepFocus){
   view = "grammar"; $app.dataset.view = view;
   const q = gram.q.trim().toLowerCase();
   const list = GRAMMAR.filter(g => (gram.cat === "全部" || g.cat === gram.cat) && (!q || [g.g, g.zh, g.conn, plain(g.ex), kana(g.ex), g.exzh, g.tip].join(" ").toLowerCase().includes(q)));
-  const items = list.map(g => `<details><summary><b lang="ja">${esc(g.g)}</b><span>${esc(g.zh)}</span><i>${esc(g.cat)}</i></summary><div class="gx">
-      <div class="row"><span>接續</span><span lang="ja">${esc(g.conn)}</span></div>
-      <div class="row"><span>例句</span><span class="ex" lang="ja">${jpHTML(g.ex)}${tts.ok ? `<button class="say-sm" data-act="sayg" data-t="${esc(g.ex)}" aria-label="念例句">${ICON_SPEAK}</button>` : ""}<small>${esc(g.exzh)}</small></span></div>
-      ${g.tip ? `<div class="warn">${noteHTML(g.tip)}</div>` : ""}</div></details>`).join("");
-  const html = `
-    <div class="qtop"><button class="btn-ghost" data-act="home">‹ 首頁</button><div class="qtitle">文法速查</div><div class="qcount">${list.length}/${GRAMMAR.length}</div></div>
-    <input class="search" type="search" id="gsearch" placeholder="搜尋文法、中文意思或例句" value="${esc(gram.q)}" autocomplete="off">
-    <div class="chips">${GCATS.map(c => `<button class="chip" data-act="gcat" data-c="${c}" aria-pressed="${gram.cat === c}">${c}</button>`).join("")}</div>
-    <section class="sheet glist">${items || `<p class="empty">找不到符合的文法</p>`}</section>`;
+  const empty = `<p class="empty">${tx("找不到符合的文法", "該当する文法がありません")}</p>`;
+  const items = list.map(g => `<details><summary><b lang="ja">${esc(g.g)}</b><span${ZH}>${esc(g.zh)}</span><i>${gcat(g.cat)}</i></summary><div class="gx">
+      <div class="row"><span>${tx("接續", "接続")}</span><span lang="ja">${esc(g.conn)}</span></div>
+      <div class="row"><span>${tx("例句", "例文")}</span><span class="ex"><span lang="ja">${jpHTML(g.ex)}</span>${tts.ok ? `<button class="say-sm" data-act="sayg" data-t="${esc(g.ex)}" aria-label="${tx("念例句", "例文を読み上げ")}">${ICON_SPEAK}</button>` : ""}<small${ZH}>${esc(g.exzh)}</small></span></div>
+      ${g.tip ? `<div class="warn"${ZH}>${noteHTML(g.tip)}</div>` : ""}</div></details>`).join("");
   if (keepFocus){
     const box = $app.querySelector(".glist"), cnt = $app.querySelector(".qcount");
-    if (box){ box.innerHTML = items || `<p class="empty">找不到符合的文法</p>`; cnt.textContent = `${list.length}/${GRAMMAR.length}`; return; }
+    if (box){ box.innerHTML = items || empty; cnt.textContent = `${list.length}/${GRAMMAR.length}`; return; }
   }
-  $app.innerHTML = html;
+  $app.innerHTML = `${prefsHTML()}
+    <div class="qtop">${back()}<div class="qtitle">${tx("文法速查", "文法一覧")}</div><div class="qcount">${list.length}/${GRAMMAR.length}</div></div>
+    <input class="search" type="search" id="gsearch" placeholder="${tx("搜尋文法、中文意思或例句", "文法・意味・例文で検索")}" value="${esc(gram.q)}" autocomplete="off">
+    <div class="chips">${GCATS.map(c => `<button class="chip" data-act="gcat" data-c="${c}" aria-pressed="${gram.cat === c}">${gcat(c)}</button>`).join("")}</div>
+    <section class="sheet glist">${items || empty}</section>`;
 }
 
 /* ---------------- Render: exam info ---------------- */
 function renderInfo(){
   view = "info"; $app.dataset.view = view;
-  const T = t => `<li><span lang="ja">${TYPES[t].name}</span>　${esc(TYPES[t].zh)}</li>`;
-  $app.innerHTML = `
-    <div class="qtop"><button class="btn-ghost" data-act="home">‹ 首頁</button><div class="qtitle">考試資訊</div></div>
+  const T = t => `<li><span lang="ja">${TYPES[t].name}</span>　${esc(L2(TYPES[t].d))}</li>`;
+  $app.innerHTML = `${prefsHTML()}
+    <div class="qtop">${back()}<div class="qtitle">${tx("考試資訊", "試験情報")}</div></div>
     <div class="info-col">
-      <section class="sheet"><div class="sec-head">N4 考試科目與時間</div>
+      <section class="sheet"><div class="sec-head">${tx("N4 考試科目與時間", "N4 の試験科目と時間")}</div>
         <table class="itable">
-          <tr><th>考試日</th><td>${EXAM.label} 第 2 回<small>入場時間、考場和教室以准考證為準</small></td></tr>
-          <tr><th lang="ja">言語知識（文字・語彙）</th><td>25 分鐘</td></tr>
-          <tr><th lang="ja">言語知識（文法）・読解</th><td>55 分鐘</td></tr>
-          <tr><th lang="ja">聴解</th><td>35 分鐘</td></tr>
+          <tr><th>${tx("考試日", "試験日")}</th><td>${examLabel()} ${tx("第 2 回", "第2回")}<small>${tx("入場時間、考場和教室以准考證為準", "集合時間・会場・教室は受験票で確認")}</small></td></tr>
+          <tr><th lang="ja">言語知識（文字・語彙）</th><td>25 ${tx("分鐘", "分")}</td></tr>
+          <tr><th lang="ja">言語知識（文法）・読解</th><td>55 ${tx("分鐘", "分")}</td></tr>
+          <tr><th lang="ja">聴解</th><td>35 ${tx("分鐘", "分")}</td></tr>
         </table>
-        <p class="src">官方說明各科時間可能變動。來源：<a href="https://www.jlpt.jp/e/guideline/testsections.html" target="_blank" rel="noopener">jlpt.jp 試験科目と試験時間</a></p>
+        <p class="src">${tx("官方說明各科時間可能變動。來源：", "時間は変更される場合があります。出典：")}<a href="https://www.jlpt.jp/e/guideline/testsections.html" target="_blank" rel="noopener">jlpt.jp 試験科目と試験時間</a></p>
       </section>
-      <section class="sheet"><div class="sec-head">合格標準</div>
+      <section class="sheet"><div class="sec-head">${tx("合格標準", "合格基準")}</div>
         <table class="itable">
-          <tr><th>總分</th><td>90 分以上（滿分 180）</td></tr>
-          <tr><th lang="ja">言語知識・読解</th><td>至少 38 分（滿分 120）<small>文字・語彙・文法和讀解合在一起算</small></td></tr>
-          <tr><th lang="ja">聴解</th><td>至少 19 分（滿分 60）</td></tr>
+          <tr><th>${tx("總分", "総合得点")}</th><td>${tx("90 分以上（滿分 180）", "90 点以上（180 点満点）")}</td></tr>
+          <tr><th lang="ja">言語知識・読解</th><td>${tx("至少 38 分（滿分 120）", "38 点以上（120 点満点）")}<small>${tx("文字・語彙・文法和讀解合在一起算", "文字・語彙・文法と読解の合計")}</small></td></tr>
+          <tr><th lang="ja">聴解</th><td>${tx("至少 19 分（滿分 60）", "19 点以上（60 点満点）")}</td></tr>
         </table>
-        <div class="pad" style="border-top:1px solid var(--line)"><p>總分夠了但有一科低於基準分，仍然不合格；缺考任何一科也不合格。</p></div>
-        <p class="src">來源：<a href="https://www.jlpt.jp/e/guideline/results.html" target="_blank" rel="noopener">jlpt.jp 認定結果</a></p>
+        <div class="pad" style="border-top:1px solid var(--line)"><p>${tx("總分夠了但有一科低於基準分，仍然不合格；缺考任何一科也不合格。", "総合得点が足りていても、基準点に届かない区分が一つでもあれば不合格です。欠席した科目がある場合も不合格になります。")}</p></div>
+        <p class="src">${tx("來源：", "出典：")}<a href="https://www.jlpt.jp/e/guideline/results.html" target="_blank" rel="noopener">jlpt.jp 認定結果</a></p>
       </section>
     </div>
     <div class="info-col">
-      <section class="sheet"><div class="sec-head">N4 題型</div>
+      <section class="sheet"><div class="sec-head">${tx("N4 題型", "N4 の問題形式")}</div>
         <div class="pad" style="padding-bottom:0"><b lang="ja">言語知識（文字・語彙）</b></div><ol class="types">${SEC_TYPES.goi.map(T).join("")}</ol>
         <div class="pad" style="padding:0 16px"><b lang="ja">言語知識（文法）・読解</b></div><ol class="types">${[...SEC_TYPES.bunpo, ...SEC_TYPES.dokkai].map(T).join("")}</ol>
         <div class="pad" style="padding:0 16px"><b lang="ja">聴解</b></div><ol class="types">${SEC_TYPES.chokai.map(T).join("")}</ol>
-        <p class="src">每種題型的題數每次可能略有不同，以當天試題為準。</p>
+        <p class="src">${tx("每種題型的題數每次可能略有不同，以當天試題為準。", "各問題の数は回によって多少変わることがあります。")}</p>
       </section>
-      <section class="sheet"><div class="sec-head">台灣考區公告<small>查核 ${EXAM.checked}</small></div>
+      <section class="sheet"><div class="sec-head">${tx("台灣考區公告", "台湾会場のお知らせ")}<small>${tx("查核", "確認日")} ${EXAM.checked}</small></div>
         <div class="pad">
-          <p class="warnbox"><b>小心詐騙：</b>LTTC 管理的日檢網站 11/11 確認遭第三方未經授權存取，目前網站維修、暫停對外服務。官方說 12/6 考試、准考證寄發和成績都不受影響；接到要你提供帳號密碼、操作 ATM 或點不明連結的電話、簡訊、Email，都不要理。</p>
-          <p>准考證：2026 年第 2 回已於 11/16（一）用平信郵簡寄出。</p>
-          <p>聯絡 LTTC：(02) 2365-5050（週一至週五上班時間）、jlpt@lttc.ntu.edu.tw。</p>
+          <p class="warnbox">${tx("<b>小心詐騙：</b>LTTC 管理的日檢網站 11/11 確認遭第三方未經授權存取，目前網站維修、暫停對外服務。官方說 12/6 考試、准考證寄發和成績都不受影響；接到要你提供帳號密碼、操作 ATM 或點不明連結的電話、簡訊、Email，都不要理。",
+            "<b>詐欺に注意：</b>LTTC が運営する JLPT サイトで 11/11 に第三者による不正アクセスが確認され、現在はメンテナンスのため公開を停止しています。公式によると 12/6 の試験、受験票の発送、成績には影響ありません。アカウントやパスワードを聞いたり、ATM の操作や不明なリンクのクリックを求めたりする電話・SMS・メールには応じないでください。")}</p>
+          <p>${tx("准考證：2026 年第 2 回已於 11/16（一）用平信郵簡寄出。", "受験票：2026年第2回分は 11/16（月）に普通郵便で発送済みです。")}</p>
+          <p>${tx("聯絡 LTTC：(02) 2365-5050（週一至週五上班時間）、jlpt@lttc.ntu.edu.tw。", "問い合わせ：LTTC (02) 2365-5050（平日の業務時間）、jlpt@lttc.ntu.edu.tw")}</p>
         </div>
-        <p class="src">來源：<a href="https://www.jlpt.tw/" target="_blank" rel="noopener">jlpt.tw</a>、<a href="https://www.jpf.go.jp/j/information/2026/notice_20261119.html" target="_blank" rel="noopener">國際交流基金會公告（2026/11/19）</a></p>
+        <p class="src">${tx("來源：", "出典：")}<a href="https://www.jlpt.tw/" target="_blank" rel="noopener">jlpt.tw</a>、<a href="https://www.jpf.go.jp/j/information/2026/notice_20261119.html" target="_blank" rel="noopener">${tx("國際交流基金會公告（2026/11/19）", "国際交流基金のお知らせ（2026/11/19）")}</a></p>
       </section>
     </div>`;
   window.scrollTo(0,0);
 }
 
 /* ---------------- Events ---------------- */
-function startType(t){ const T = TYPES[t]; startQuiz("type:" + t, `${SECS[T.sec].name}・${T.name}`, itemsForType(t)); }
+function startType(t){ startQuiz("type:" + t, itemsForType(t)); }
 function startSecMix(s){
   const pool = SEC_TYPES[s].filter(t => !PASSAGE_TYPES.has(t)).flatMap(t => BY_TYPE[t]);
   let items = pickItems(pool, 10);
   if (s === "dokkai") items = [...pickPassages("tan", 3), ...pickPassages("chu", 3), ...pickPassages("joho", 2)];
   if (s === "bunpo") items = [...pickItems(BY_TYPE.bunpo, 5), ...pickItems(BY_TYPE.narabe, 2), ...pickPassages("bunsho", 4)];
-  startQuiz("sec:" + s, `${SECS[s].name}・混合`, items);
+  startQuiz("sec:" + s, items);
 }
 function again(){
   const m = quiz.mode;
-  if (m === "mock") return startQuiz("mock", "迷你模考", buildMock(), true);
+  if (m === "mock") return startQuiz("mock", buildMock(), true);
   if (m.startsWith("type:")) return startType(m.slice(5));
   if (m.startsWith("sec:")) return startSecMix(m.slice(4));
-  if (m === "wrong") return startWrong();
+  if (m === "wrong" || m === "retry") return startWrong();
   goHome();
 }
-function startWrong(){ const ids = shuffle(store.wrong).slice(0, 15); if (!ids.length) return goHome(); startQuiz("wrong", "錯題本", ids.map(id => ITEMS[id])); }
+function startWrong(){ const ids = shuffle(store.wrong).slice(0, 15); if (!ids.length) return goHome(); startQuiz("wrong", ids.map(id => ITEMS[id])); }
+/* Redraw the current screen after a language switch; answers, timers and card position are kept */
+function rerender(){
+  if ((view === "quiz" || view === "quiz-p") && quiz) renderQuiz(false);
+  else if (view === "result" && quiz) renderResult(false);
+  else if (view === "cards" && deck) renderCards();
+  else if (view === "grammar") renderGrammar();
+  else if (view === "info") renderInfo();
+  else if (view === "sec") renderSec(curSec);
+  else renderHome();
+}
 $app.addEventListener("click", e => {
   const el = e.target.closest("[data-act]"); if (!el) return;
   const act = el.dataset.act;
   switch (act){
     case "home": return goHome();
-    case "mock": return startQuiz("mock", "迷你模考", buildMock(), true);
-    case "sec": return renderSec(el.dataset.s);
+    case "lang":
+      if (lang !== el.dataset.v){ lang = store.lang = el.dataset.v; save(); applyLang(); rerender(); }
+      return;
+    case "theme":
+      store.theme = el.dataset.v; save(); applyTheme();
+      document.querySelectorAll('[data-act="theme"]').forEach(b => b.setAttribute("aria-pressed", b.dataset.v === currentTheme()));
+      return;
+    case "mock": return startQuiz("mock", buildMock(), true);
+    case "sec": renderSec(el.dataset.s); return window.scrollTo(0,0);
     case "type": return startType(el.dataset.t);
     case "secmix": return startSecMix(el.dataset.s);
     case "pick": return select(+el.dataset.i);
@@ -1674,7 +1760,7 @@ $app.addEventListener("click", e => {
     case "play": { const q = cur(); return speakSeq(audioParts(q.it, q.order)); }
     case "reveal": cur().reveal = true; return renderQuiz(false);
     case "furi": store.furi = !store.furi; save(); applyFuri(); el.setAttribute("aria-pressed", store.furi ? "true" : "false"); return;
-    case "retry": { const ids = quiz.items.filter(x => !(quiz.answers[x.it.id] && quiz.answers[x.it.id].ok)).map(x => x.it); return startQuiz("wrong", "重練錯題", ids); }
+    case "retry": { const ids = quiz.items.filter(x => !(quiz.answers[x.it.id] && quiz.answers[x.it.id].ok)).map(x => x.it); return startQuiz("retry", ids); }
     case "again": return again();
     case "wrong": return startWrong();
     case "cards": return startCards("全部");
@@ -1688,7 +1774,11 @@ $app.addEventListener("click", e => {
     case "sayg": e.preventDefault(); return sayText(el.dataset.t);
     case "info": return renderInfo();
     case "reset":
-      if (confirm("確定清除所有練習紀錄、錯題本和單字卡進度？")){ const keep = {furi: store.furi, checks: store.checks}; Object.keys(store).forEach(k => delete store[k]); Object.assign(store, {stats:{}, wrong:[], answered:0, correct:0, known:{}, best:null}, keep); save(); renderHome(); }
+      if (confirm(tx("確定清除所有練習紀錄、錯題本和單字卡進度？", "すべての記録、間違えた問題、単語カードの進み具合を消しますか？"))){
+        const keep = {furi: store.furi, checks: store.checks, lang: store.lang, theme: store.theme};
+        Object.keys(store).forEach(k => delete store[k]);
+        Object.assign(store, {stats:{}, wrong:[], answered:0, correct:0, known:{}, best:null}, keep); save(); renderHome();
+      }
       return;
   }
 });
