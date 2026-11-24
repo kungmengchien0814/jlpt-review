@@ -1,0 +1,16 @@
+{
+  "name": "日檢考前衝刺（N5～N1）",
+  "short_name": "日檢衝刺",
+  "description": "JLPT 日本語能力試驗考前練習：完整模考、今日複習、文字語彙、文法、讀解、聽解，每題附中文解析。自編練習題，非官方試題。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f2ee",
+  "theme_color": "#3b55a0",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "favicon.svg", "sizes": "any", "type": "image/svg+xml"}
+  ]
+}

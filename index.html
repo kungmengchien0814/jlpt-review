@@ -5,16 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>/* Apply the saved theme and language before the first paint */try{var s=JSON.parse(localStorage.getItem("jlpt-n4-review-v1"))||{};if(s.theme==="light"||s.theme==="dark")document.documentElement.setAttribute("data-theme",s.theme);if(s.lang==="ja"){document.documentElement.lang="ja";}}catch(e){}</script>
 <title>日檢 N4 考前衝刺</title>
-<meta name="description" content="JLPT 日本語能力試驗考前練習（N4 為主，可切換 N5～N1）：文字語彙、文法、讀解、聽解（瀏覽器語音）、單字卡、文法速查和錯題本，每題附中文翻譯與解析。自編練習題，非官方試題。">
+<meta name="description" content="JLPT 日本語能力試驗考前練習（N4 為主，可切換 N5～N1）：照正式時間的完整模考和粗估分數、每天的間隔複習，加上文字語彙、文法、讀解、聽解（瀏覽器語音）、單字卡、文法速查和錯題本，每題附中文翻譯與解析。自編練習題，非官方試題。">
 <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121418" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="favicon.svg?v=20261122b" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261122b">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="日檢衝刺">
 <link rel="canonical" href="https://kungmengchien.uk/jlpt-review/">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="zh_TW">
 <meta property="og:title" content="日檢 N4 考前衝刺">
-<meta property="og:description" content="N5～N1 五個級數可切換。文字語彙、文法、讀解、聽解、單字卡和文法速查，每題附中文解析，手機就能練。自編練習題，非官方試題。">
+<meta property="og:description" content="N5～N1 五個級數可切換。完整模考照正式時間倒數、交卷估分數，每天有複習卡片和弱點練習；每題附中文解析，手機就能練，沒網路也能用。自編練習題，非官方試題。">
 <meta property="og:url" content="https://kungmengchien.uk/jlpt-review/">
 <meta property="og:image" content="https://kungmengchien.uk/jlpt-review/og.png?v=20261122b">
 <meta property="og:image:width" content="1200">
@@ -177,9 +179,9 @@ html:not(.furi) .fz rt{display:none}
 /* Section picker */
 .trow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
 .trow:last-child{border-bottom:0}
-.trow b{display:block;font-family:var(--f-jp);font-weight:600;font-size:17px}
-.trow b small{font-family:var(--f-num);font-weight:500;color:var(--print);font-size:12px;margin-right:6px}
-.trow span{display:block;color:var(--muted);font-size:14px}
+.trow > div > b{display:block;font-family:var(--f-jp);font-weight:600;font-size:17px}
+.trow > div > b small{font-family:var(--f-num);font-weight:500;color:var(--print);font-size:12px;margin-right:6px}
+.trow > div > span{display:block;color:var(--muted);font-size:14px}
 .meter{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:6px;max-width:220px}
 .meter i{display:block;height:100%;background:var(--print)}
 
@@ -212,7 +214,8 @@ html:not(.furi) .fz rt{display:none}
 .pb.cur{background:var(--print-soft);border-color:var(--print);color:var(--print)}
 .qnum{font-size:13px;color:var(--muted);margin-bottom:8px;display:flex;gap:8px 10px;align-items:center;flex-wrap:wrap}
 .qnum .ptag{color:var(--print);font-family:var(--f-jp);font-weight:600;font-size:14px}
-.furi-btn{margin-left:auto;padding:3px 10px;font-size:13px}
+.qtools{margin-left:auto;display:flex;gap:6px}
+.qtools .btn-ghost{padding:3px 10px;font-size:13px}
 .prompt{font-size:20px;line-height:2;margin:0 0 14px;text-wrap:pretty}
 .prompt.small{font-size:17px;line-height:1.9}
 .word{font-family:var(--f-kyo);font-size:30px;font-weight:600;margin:0 0 10px;line-height:1.5}
@@ -394,9 +397,9 @@ div.opt{cursor:default}
   .modes{display:grid;grid-template-columns:1fr 1fr}
   .modes .mode{border-bottom:1px solid var(--line)}
   .modes .mode.primary{grid-column:1 / -1}
-  .modes .mode:not(.primary):nth-child(even){border-right:1px solid var(--line)}
+  .modes .mode:not(.primary):nth-child(odd){border-right:1px solid var(--line)}
   .modes .mode:not(.primary) .go{display:none}
-  .modes .mode:not(.primary):last-child:nth-child(even){grid-column:1 / -1;border-right:0}
+  .modes .mode:not(.primary):last-child:nth-child(odd){grid-column:1 / -1;border-right:0}
   .home-side{display:grid;grid-template-columns:1fr 1fr;align-items:start}
   .qcard{padding:20px 24px}
   .prompt{font-size:21px}
@@ -431,6 +434,110 @@ div.opt{cursor:default}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
+/* Today panel: streak, daily goal, phase advice and today's tasks */
+.today .goal{padding:12px 16px 14px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line)}
+.goal-top{display:flex;justify-content:space-between;align-items:baseline;gap:4px 12px;flex-wrap:wrap}
+.streak,.goal-n{font-size:14px;color:var(--muted)}
+.streak b,.goal-n b{font:600 22px/1 var(--f-num);color:var(--ink);font-variant-numeric:tabular-nums;margin-right:2px}
+.goal-n small{font-size:12px}
+.goal-set{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.goal-set span{margin-right:2px}
+.goal-set .chip{padding:3px 11px;font:600 13px/1.4 var(--f-num)}
+.phase{margin:0;font-size:14px;line-height:1.55;background:var(--print-soft);border-radius:4px;padding:8px 10px}
+.tasks{list-style:none;margin:0;padding:0}
+.tasks li{border-bottom:1px solid var(--line)}
+.tasks li:last-child{border-bottom:0}
+.tasks button{display:grid;grid-template-columns:26px 1fr auto;gap:12px;align-items:center;width:100%;padding:11px 16px;border:0;background:none;text-align:left;cursor:pointer}
+.tasks button:hover:not([disabled]){background:var(--print-soft)}
+.tasks button[disabled]{cursor:default}
+.tk{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--print);display:grid;place-items:center;font:600 12px/1 var(--f-num);color:var(--print)}
+.tasks .tx{min-width:0}
+.tasks .tx b{display:block;font-size:16px;line-height:1.35}
+.tasks .tx small{display:block;color:var(--muted);font-size:13px;line-height:1.45;margin-top:1px}
+.tasks .go{font:600 20px/1 var(--f-form);color:var(--print)}
+.tasks li.done .tk{background:var(--lead);border-color:var(--lead);color:var(--lead-ink)}
+.tasks li.done .tx b{color:var(--muted);text-decoration:line-through}
+.tasks li.done .go,.tasks button[disabled] .go{opacity:.35}
+
+/* Mock history */
+.hist{display:flex;gap:8px;padding:14px 16px 12px;align-items:flex-end}
+.hb{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
+.hb .col{width:100%;max-width:34px;height:80px;background:var(--print-soft);border-radius:3px;display:flex;align-items:flex-end;overflow:hidden}
+.hb .col i{display:block;width:100%;background:var(--print)}
+.hb b{font:600 13px/1.2 var(--f-num)}
+.hb small{font-size:11px;color:var(--muted);line-height:1.3;white-space:nowrap}
+.hb em{font:normal 600 11px/1.3 var(--f-num);white-space:nowrap}
+.hb em.ok{color:var(--good)}
+.hb em.ng{color:var(--bad)}
+
+/* Score estimate */
+.est{padding:6px 16px 14px;border-bottom:1px solid var(--line)}
+.est table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.est th,.est td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.est th:first-child{text-align:left;white-space:normal;padding-left:0}
+.est td:last-child,.est th:last-child{padding-right:0}
+.est thead th{font-weight:600;font-size:12px;color:var(--print)}
+.est tbody th{font-weight:600;font-size:14px}
+.est td.ok b{color:var(--good)}
+.est td.ng b{color:var(--bad)}
+.est td.ok,.est td.ng{font-family:var(--f-num)}
+.est td.na{color:var(--muted);text-align:left}
+.est tr.tot th,.est tr.tot td{border-bottom:0;font-weight:700}
+.verdict-line{margin:10px 0 2px;font-weight:700;font-size:17px;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+.verdict-line.ok{color:var(--good)}
+.verdict-line.ng{color:var(--bad)}
+.verdict-line small{font-weight:400;font-size:14px;color:var(--muted)}
+.est .note{margin:6px 0 0;font-size:13px}
+
+/* 完整模考: the screen between sections */
+.fullbreak{padding:18px 16px;display:flex;flex-direction:column;gap:14px}
+.fb-msg{margin:0;font-size:15px;line-height:1.65}
+.secs{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.secs li{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.secs li:last-child{border-bottom:0}
+.secs li b{font-weight:600;font-size:15px}
+.secs li span{font:500 13px/1.6 var(--f-num);color:var(--muted);text-align:right;white-space:nowrap}
+.secs li em{grid-column:1 / -1;font-style:normal;font-size:13px;color:var(--muted)}
+.secs li.cur{background:var(--print-soft)}
+.secs li.cur em{color:var(--print);font-weight:600}
+.fullbreak .row{display:flex;justify-content:flex-end}
+.qcount .tl.warn{color:var(--bad);font-weight:600}
+.unans{margin:0;display:flex;align-items:center;justify-content:flex-end;gap:8px 12px;flex-wrap:wrap;font-size:14px;color:var(--bad)}
+.unans .btn-ghost{color:var(--ink)}
+.strip button{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font:600 11px/1 var(--f-num);color:var(--muted);background:var(--sheet);padding:0;cursor:pointer}
+.strip button:hover{border-color:var(--print)}
+.strip button.done{background:var(--lead);border-color:var(--lead);color:var(--lead-ink)}
+.strip button.cur{border-color:var(--print);color:var(--print);box-shadow:0 0 0 3px var(--print-soft)}
+.strip button.cur.done{color:var(--lead-ink)}
+@media (pointer:coarse){.strip button{width:32px;height:32px;font-size:12px}}
+.btn-ghost[aria-expanded="true"]{background:var(--print-soft);border-color:var(--print);color:var(--print)}
+
+/* Grammar cards in 今日複習 */
+.gword{font-family:var(--f-jp);font-size:clamp(28px,8vw,40px)}
+.fconn{font-size:15px;display:flex;gap:4px 8px;align-items:baseline;flex-wrap:wrap;justify-content:center}
+.fconn span:first-child{color:var(--print);font-size:13px}
+.ftip{font-size:14px;line-height:1.55;background:var(--print-soft);border-radius:4px;padding:6px 10px;max-width:34ch;text-align:left}
+.ftag{position:absolute;top:14px;left:14px;font:600 12px/1 var(--f-ui);color:var(--print);border:1px solid var(--print);border-radius:999px;padding:4px 9px}
+
+/* 題型攻略 */
+.guide{margin-top:8px}
+.guide summary{display:inline-block;font-size:13px;color:var(--print);cursor:pointer;list-style:none}
+.guide summary::-webkit-details-marker{display:none}
+.guide summary::before{content:"＋ "}
+.guide[open] summary::before{content:"－ "}
+.gd{margin:6px 0 2px;font-size:14px;line-height:1.6;color:var(--ink)}
+.gd dt{font-weight:700;color:var(--print);font-size:13px;margin-top:8px}
+.gd dt:first-child{margin-top:0}
+.gd dd{margin:2px 0 0}
+.gd ul{margin:0;padding-left:1.2em}
+.gd li{margin:2px 0}
+.guide-box{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:10px 14px;margin:0 0 14px}
+.trow > .btn{align-self:start;margin-top:4px}
+
+/* Listening script: replay one line */
+.lp{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--sheet);color:var(--print);padding:0;margin-right:6px;cursor:pointer;vertical-align:middle;position:relative;top:-1px}
+.lp svg{width:11px;height:11px;fill:currentColor}
+.lp:hover{border-color:var(--print)}
 </style>
 </head>
 <body>
@@ -4780,12 +4887,128 @@ const LEVEL_CONF = {
 };
 const LEVEL_ORDER = ["n5","n4","n3","n2","n1"];
 const tipsOf = () => LV.tips;
+/* 完整模考: [type, count] for each section of LV.exam, in the real test's order.
+   The counts are this site's choice, close to a real paper; they are not official numbers. */
+const FULL_MOCK = {
+  n5: [[["kanji",7],["hyoki",5],["bunmyaku",6],["iikae",3]], [["bunpo",9],["narabe",4],["bunsho",4],["tan",2],["chu",2],["joho",1]], [["kadai",5],["point",5],["hatsuwa",4],["sokuji",6]]],
+  n4: [[["kanji",7],["hyoki",5],["bunmyaku",8],["iikae",4],["yoho",4]], [["bunpo",13],["narabe",4],["bunsho",4],["tan",3],["chu",3],["joho",2]], [["kadai",6],["point",6],["hatsuwa",5],["sokuji",8]]],
+  n3: [[["kanji",8],["hyoki",6],["bunmyaku",11],["iikae",5],["yoho",5]], [["bunpo",13],["narabe",5],["bunsho",5],["tan",4],["chu",3],["cho",4],["joho",2]], [["kadai",5],["point",5],["gaiyo",3],["hatsuwa",4],["sokuji",9]]],
+  n2: [[["kanji",5],["hyoki",5],["gokei",5],["bunmyaku",7],["iikae",5],["yoho",5],["bunpo",12],["narabe",5],["bunsho",5],["tan",3],["chu",3],["togo",2],["shucho",4],["joho",2]], [["kadai",4],["point",4],["gaiyo",3],["sokuji",8],["togoc",4]]],
+  n1: [[["kanji",6],["bunmyaku",7],["iikae",6],["yoho",6],["bunpo",10],["narabe",5],["bunsho",5],["tan",3],["chu",3],["cho",4],["togo",2],["shucho",4],["joho",2]], [["kadai",4],["point",4],["gaiyo",3],["sokuji",8],["togoc",4]]]
+};
+
+/* 題型攻略: what each item type tests, how to work it, common traps and a time budget.
+   Chinese text; Japanese goes inside 「」 so it is marked as Japanese. by: changes for one level. Time budgets are suggestions. */
+const LISTEN_TIME = "照音檔播放，正式考試只播一次。選完馬上看下一題的選項，不要回頭想上一題。";
+const TYPE_GUIDE = {
+  kanji: {what:"畫線漢字的讀音。常考長音、促音、濁音、拗音，以及同一個字的音讀和訓讀。",
+    how:["先遮住選項，自己在心裡念一次，再找和自己念的一樣的。", "選項常只差一個音：逐字比對長音、促音「っ」、濁點和小字「ゃ・ゅ・ょ」。"],
+    trap:["只差一個音的選項，例如「びょういん」（病院）和「びよういん」（美容院）。", "同一個漢字讀法不同，例如「生」在「先生」「生まれる」「生もの」裡讀音都不一樣，要看整個詞。"],
+    time:"每題 15～30 秒；不會的先選最像的，把時間留給後面。"},
+  hyoki: {what:"用平假名寫的詞，選正確的漢字寫法。",
+    how:["先想這個詞的意思，再找意思對得上的漢字。", "看部首：和水有關多半是「氵」，和手的動作有關多半是「扌」，和說話有關多半是「言」。", "注意漢字後面的送假名有沒有寫對。"],
+    trap:["同音不同字，例如「会う」和「合う」、「早い」和「速い」。", "形狀很像的字，例如「待」和「持」、「話」和「語」。"],
+    time:"每題 20～30 秒。",
+    by:{n5:{what:"用平假名寫的詞，選正確的漢字或片假名寫法。",
+      trap:["片假名容易看錯：「シ」和「ツ」、「ソ」和「ン」，還有長音「ー」和小字「ッ」「ャ」的位置。", "形狀很像的漢字，例如「休」和「体」、「右」和「石」。"]}}},
+  gokei: {what:"派生詞和複合詞：在詞前面加「不・無・未・非」，或在後面加「〜化・〜性・〜的・〜風・〜式・〜感」等，選能組成正確詞的那一個。",
+    how:["把四個選項各放進去念一次，聽過的組合通常就是答案。", "前綴要看後面的詞：「無責任」「未経験」「非常識」「不注意」的搭配是固定的，要整個詞一起記。"],
+    trap:["「不・無・未・非」中文都能翻成“不”，但不能互換；例如是「未解決」，不是「不解決」。"],
+    time:"每題 20～30 秒。"},
+  bunmyaku: {what:"依整句的意思，選放進（　）最自然的詞。",
+    how:["先讀完整句，找出決定意思的關鍵字（前後的名詞、動詞、副詞）。", "看搭配：哪個詞能和前後的詞一起用，例如「傘を さす」「かぜを ひく」。", "動詞要分自動詞和他動詞：「を」前面通常接他動詞，例如「ドアを 開ける」、「ドアが 開く」。"],
+    trap:["四個選項常是同一類的詞（都是動詞或都是副詞），只能靠意思和搭配來分。"],
+    time:"每題 30 秒左右。"},
+  iikae: {what:"選和畫線部分意思最接近的詞或說法。",
+    how:["先想畫線詞的意思，再看選項。", "把選項放回原句念一次，句子意思沒變的就是答案。"],
+    trap:["和畫線詞有關、但意思不同的詞，例如反義詞，或同一個話題裡的其他詞。"],
+    time:"每題 30～40 秒。",
+    by:{n5:{what:"選和畫線句子意思差不多的句子。",
+      how:["先抓畫線句的重點：誰、做什麼、是不是否定。", "常見的換法是反義詞加否定，例如「おぼえていません」＝「わすれました」、「しずかでは ありません」＝「にぎやかです」。"],
+      trap:["選項常只換掉主詞或時態，要看清楚是誰做的、已經做了還是還沒做。"]},
+      n4:{what:"選和畫線句子意思差不多的句子。",
+      how:["先抓畫線句的重點：誰、做什麼、是不是否定。", "常見的換法是反義詞加否定，例如「おぼえていません」＝「わすれました」，或換成意思一樣的說法，例如「〜ことに なりました」≒「〜と 決まりました」。"],
+      trap:["選項常只換掉主詞或時態，要看清楚是誰做的、已經做了還是還沒做。", "授受動詞換說法時方向會反過來：「AがBに 教えて あげた」＝「BがAに 教えて もらった」。"]}}},
+  yoho: {what:"給一個詞，選這個詞用得正確的句子。",
+    how:["先想這個詞的意思和常見搭配，再一句一句檢查。", "錯的句子常是把意思相近的另一個詞的用法套進來；可以想想“這一句換成哪個詞才對”。"],
+    trap:["四句的意思都說得通，但只有一句的搭配和用法正確，不能只看意思。"],
+    time:"每題 40～60 秒，要讀四個句子。"},
+  bunpo: {what:"選放進（　）的文法形式：助詞、動詞變化、句型、敬語。",
+    how:["先看（　）前面的接續：動詞是什麼形、前面是名詞還是な形容詞，刪掉接不上的。", "再看後面：句尾的時態、有沒有否定、語氣是請求還是推測。", "最後才比意思。"],
+    trap:["意思相近的句型，例如「ために」和「ように」、「せいで」和「おかげで」。", "敬語的方向：自己的動作用謙讓語（「参ります」），對方的動作用尊敬語（「いらっしゃいます」）。"],
+    time:"每題 30 秒以內。",
+    by:{n2:{trap:["意思相近的句型，例如「〜わけにはいかない」和「〜わけではない」、「〜ものの」和「〜ものだから」。", "敬語的方向：自己的動作用謙讓語，對方的動作用尊敬語。"]},
+      n1:{how:["N1 文法多是書面語的固定說法，先看接續（動詞辭書形、た形，或名詞），刪掉接不上的。", "再看語氣：這個句型是正面評價、負面評價，還是說話者的感嘆。", "最後才比意思。"],
+      trap:["意思接近但語氣不同的句型，例如「〜を禁じ得ない」（忍不住）和「〜を余儀なくされる」（不得不）。"]}}},
+  narabe: {what:"把四個選項排成正確的句子，回答放在★位置的是哪一個。",
+    how:["先把一定連在一起的兩個接起來，例如名詞和後面的助詞、動詞和後面的「こと」「の」。", "再看空格前後的字，決定第一格和最後一格。", "排好後整句念一次，最後確認★是第幾格。"],
+    trap:["★不一定在第三格，每題位置不同，一定要數。", "排到一半就選，常會選到★旁邊那一格。"],
+    time:"每題 1 分鐘左右。"},
+  bunsho: {what:"一篇文章裡有幾個空格，選符合上下文的詞或文法。",
+    how:["空格在句首，多半是接續詞（「だから」「しかし」「それに」），看前後兩句是因果、轉折還是補充。", "空格在句尾，看全文的文體（です・ます體或だ・である體）和時態。", "「この・その」這類指示詞，要往前找它指的是哪件事。"],
+    trap:["只看空格那一句會選錯，至少要讀前後各一句。"],
+    time:"整篇 4～6 分鐘。"},
+  tan: {what:"讀一篇短文（通知、電子郵件、說明），回答一個問題。",
+    how:["先看問題，知道要找什麼。", "通知和信件的重點常在「〜てください」「〜ことになりました」和「なお」後面。"],
+    trap:["選項的內容在文章裡都出現過，但細節（日期、誰去做、要不要錢）被改掉了。"],
+    time:"每篇 2～3 分鐘。"},
+  chu: {what:"讀一篇中篇文章，回答原因、作者的想法、指示詞指什麼等問題。",
+    how:["問題順序大多和段落順序一樣：讀一段、答一題。", "問原因就找「から・ので・ため」；問「そう」「これ」指什麼，就往前一兩句找。"],
+    trap:["分清楚是作者自己的意見，還是作者轉述別人的話。"],
+    time:"每篇 5～6 分鐘。"},
+  cho: {what:"讀一篇長文，最後一題常問作者的主張。",
+    how:["每讀完一段，用一句話記下那段在說什麼。", "主張多在最後一兩段，「〜のではないだろうか」「〜べきだ」「つまり」後面是重點。"],
+    trap:["文章前面舉的例子或相反的意見，不是作者的結論。"],
+    time:"8～10 分鐘。"},
+  togo: {what:"讀 A、B 兩篇談同一個話題的文章，問兩篇的共同點或不同點。",
+    how:["先看問題，知道要比較什麼。", "讀 A、B 時各用一句話記下立場：贊成、反對，還是有條件贊成。", "問“兩篇都提到”的題目，答案必須 A、B 都寫到。"],
+    trap:["只在其中一篇出現的內容，被放進“兩篇都”的選項裡。"],
+    time:"7～8 分鐘。"},
+  shucho: {what:"讀一篇評論，抓作者最想說的事。",
+    how:["先看問題再讀，圈出「しかし」「とはいえ」「むしろ」後面的句子。", "作者常先介紹一般的看法再反駁，被反駁的那個看法不是答案。"],
+    trap:["選項是文章裡提到的一般看法或例子，而不是作者的主張。"],
+    time:"10 分鐘左右。"},
+  joho: {what:"看廣告、通知或表格，找出符合條件的答案。",
+    how:["先看問題，把條件圈出來：人數、日期、預算、年齡。", "不用從頭讀，直接到表格裡找每個條件都符合的那一項。", "「※」開頭的注意事項常常是答案的關鍵。"],
+    trap:["「以上・以下・未満」和「〜まで」「必着」的差別。", "只符合部分條件的選項。"],
+    time:"4～6 分鐘。"},
+  kadai: {what:"聽對話，選出這個人接下來要先做什麼。",
+    how:["音檔開始前先看四個選項。", "注意順序詞：「まず」「その前に」「〜てから」「あとで」。"],
+    trap:["一開始說要做的事，後來因為對方的話改掉了，要以最後決定的為準。", "已經做完的事不是答案。"],
+    time:LISTEN_TIME},
+  point: {what:"先聽問題，再聽對話，抓理由或重點。",
+    how:["問題念完後有時間看選項，先確定要抓的是“為什麼”還是“什麼”。", "答案常在「でも」「実は」「〜んです」後面。"],
+    trap:["對話裡被否定的內容（「〜じゃなくて」）會先出現，當成干擾選項。"],
+    time:LISTEN_TIME},
+  gaiyo: {what:"不會先給問題，聽完整段話，再回答說話者的主張或整體內容；問題和選項都只用聽的。",
+    how:["邊聽邊抓主題，以及說話者的態度：贊成、擔心，還是建議。", "「しかし」「ただ」後面的轉折常是重點。"],
+    trap:["選項只說到其中一部分內容，不是整段話的重點。"],
+    time:LISTEN_TIME},
+  hatsuwa: {what:"看情境（正式考試看圖），選這時候該說的話。",
+    how:["先判斷是拜託、邀請、道歉，還是提醒。", "再判斷是誰對誰說：是請對方做，還是自己要做；對長輩要用敬語。"],
+    trap:["「〜てもいいですか」（我可以…嗎）和「〜てください」（請你…）的說話方向相反。"],
+    time:LISTEN_TIME},
+  sokuji: {what:"聽一句話，選最適合的回應；題目和選項都不印出來。",
+    how:["抓說話者的意圖：邀請、拜託、道歉，還是抱怨。", "三個回應聽完就選，下一題馬上開始。"],
+    trap:["口語縮約，例如「〜ちゃう」（〜てしまう）、「〜とく」（〜ておく）、「〜なきゃ」（〜なければ）。", "重複原句裡同一個詞的回應，常是陷阱。"],
+    time:LISTEN_TIME},
+  togoc: {what:"聽一段較長的話，比較幾項資訊後回答。",
+    how:["1、2 番邊聽邊記：每個選項的特點，以及最後選了哪一個。", "3 番先看印出來的四個選項當筆記欄，兩個人各自喜歡哪一個分開記。"],
+    trap:["一開始喜歡的後來改了，要以最後說的為準。"],
+    time:LISTEN_TIME}
+};
+function guideHTML(t){
+  const G = TYPE_GUIDE[t]; if (!G) return "";
+  const g = {...G, ...((G.by || {})[LV.key] || {})};
+  const ul = a => `<ul>${a.map(x => `<li>${noteHTML(x)}</li>`).join("")}</ul>`;
+  return `<dl class="gd"><dt>${tx("考什麼", "出題のねらい")}</dt><dd${ZH}>${noteHTML(g.what)}</dd><dt>${tx("解題步驟", "解き方")}</dt><dd${ZH}>${ul(g.how)}</dd><dt>${tx("常見陷阱", "よくあるひっかけ")}</dt><dd${ZH}>${ul(g.trap)}</dd><dt>${tx("時間", "時間配分")}</dt><dd${ZH}>${noteHTML(g.time)}</dd></dl>`;
+}
 
 /* ---------------- Storage (this browser only) ---------------- */
 const KEY = "jlpt-n4-review-v1";
 function load(){ try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; } }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(store)); } catch(e){} }
-const store = Object.assign({stats:{}, wrong:[], answered:0, correct:0, checks:{}, furi:false, known:{}, best:null, mywords:{}}, load());
+const store = Object.assign({stats:{}, wrong:[], answered:0, correct:0, checks:{}, furi:false, known:{}, best:null, mywords:{}, days:{}, srs:{}, mocks:{}, goal:30}, load());
 
 /* ---------------- Levels: N4 is built into this page; the others load from levels/<key>.js when chosen ---------------- */
 const DATA_V = "20261123a";   /* bump whenever a levels/*.js file changes, so browsers fetch the new copy */
@@ -5080,12 +5303,12 @@ window.dictMissing = function(){
 
 /* 生字本: saved words become a deck of cards */
 function myCards(){
-  return shuffle(Object.keys(store.mywords).filter(k => JEK[k]).map(k => { const e = JEK[k]; return {k: e.h, r: e.r, pos: clsLabel(e), zh: e.zh, ex: store.mywords[k] || "", exzh: e.note, key: k}; }));
+  return shuffle(Object.keys(store.mywords).filter(k => JEK[k]).map(myCard));
 }
 function startMyWords(){
   const c = myCards();
   if (!c.length) return goHome();
-  deck = {cat: "mine", mine: true, cards: c, i: 0, flipped: false, knew: 0};
+  deck = {cat: "mine", mine: true, cards: c, i: 0, flipped: false, knew: 0, miss: 0};
   renderCards(); window.scrollTo(0,0);
 }
 const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>';
@@ -5206,52 +5429,189 @@ function buildMock(){
 }
 
 /* ---------------- Quiz state ---------------- */
-let view = "home", quiz = null, deck = null, gram = {q:"", cat:"全部"}, tick = null, curSec = "goi";
+let view = "home", quiz = null, deck = null, gram = {q:"", cat:"全部"}, tick = null, curSec = "goi", pendingTask = null;
 function startQuiz(mode, items, exam){
   stopSpeech();
   if (!items.length) return;
-  quiz = { mode, exam: !!exam, i: 0, answers: {}, start: Date.now(),
+  quiz = { mode, exam: !!exam, i: 0, answers: {}, start: Date.now(), task: pendingTask,
            items: items.map(it => ({it, order: it.fixed ? it.fixed.slice() : shuffle(it.o.map((_,k) => k)), reveal: false})) };
+  pendingTask = null;
   if (exam) startClock();
   renderQuiz(true);
 }
 function quizTitle(){
   const m = quiz.mode;
   if (m === "mock") return tx("迷你模考", "ミニ模試");
+  if (m === "full"){ const s = quiz.sections[quiz.sec]; return tx("完整模考", "本番形式の模試") + (view !== "result" && s ? "・" + s.name : ""); }
   if (m.startsWith("type:")){ const T = TYPES[m.slice(5)]; return `${SECS[T.sec].name}・${T.name}`; }
   if (m.startsWith("sec:")) return `${SECS[m.slice(4)].name}・${tx("混合", "ミックス")}`;
   if (m === "wrong") return tx("錯題本", "間違えた問題");
   if (m === "retry") return tx("重練錯題", "間違いを復習");
   return tx("練習", "練習");
 }
-function startClock(){ stopClock(); tick = setInterval(() => { const el = document.getElementById("clock"); if (el) el.textContent = mmss(Date.now() - quiz.start); }, 1000); }
+/* Exams: 完整模考 counts down each section and hands it in when time is up; the mini mock counts up */
+const inExam = () => !!(quiz && quiz.exam && (view === "quiz" || view === "quiz-p" || view === "fullbreak"));
+function secLeft(){ const s = quiz && quiz.sections && quiz.sections[quiz.sec]; return s && s.start ? s.min * 60000 - (Date.now() - s.start) : 0; }
+function clockText(){ return quiz.full ? mmss(Math.max(0, secLeft())) : mmss(Date.now() - quiz.start); }
+function startClock(){
+  stopClock();
+  tick = setInterval(() => {
+    if (!quiz) return stopClock();
+    const el = document.getElementById("clock");
+    if (el){ el.textContent = clockText(); if (quiz.full) el.classList.toggle("warn", secLeft() < 5 * 60000); }
+    if (quiz.full && view !== "fullbreak" && view !== "result" && secLeft() <= 0) endSection(true);
+  }, 1000);
+}
 function stopClock(){ if (tick){ clearInterval(tick); tick = null; } }
 function mmss(ms){ const s = Math.floor(ms/1000); return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; }
 function cur(){ return quiz.items[quiz.i]; }
-function select(disp){
-  const q = cur(); const it = q.it;
-  if (quiz.answers[it.id]) return;
-  const k = q.order[disp];
-  const ok = k === ansOf(it);
-  quiz.answers[it.id] = {pick: disp, ok};
+/* The questions in play: the current section of 完整模考, otherwise the whole quiz */
+function span(){ if (quiz.full){ const s = quiz.sections[quiz.sec]; return [s.from, s.to]; } return [0, quiz.items.length]; }
+/* Practice records an answer at once; exams record answers when handed in, so they can be changed until then */
+function commitAnswer(it, ok){
   const s = store.stats[it.id] || {r:0, w:0};
   if (ok) s.r++; else s.w++;
   s.last = ok ? 1 : 0;
   store.stats[it.id] = s;
   store.answered++; if (ok) store.correct++;
+  const lg = todayLog(); lg.q++; if (ok) lg.ok++;
   const w = store.wrong.indexOf(it.id);
   if (!ok && w < 0) store.wrong.push(it.id);
   if (ok && w >= 0) store.wrong.splice(w, 1);
-  save();
-  if (!quiz.exam && AUDIO_TYPES.has(it.type)) stopSpeech();
+}
+function select(disp){
+  const q = cur(), it = q.it, a = quiz.answers[it.id];
+  if (a && (!quiz.exam || a.pick === disp)) return;
+  const ok = q.order[disp] === ansOf(it);
+  quiz.answers[it.id] = {pick: disp, ok};
+  if (!quiz.exam){ commitAnswer(it, ok); save(); if (AUDIO_TYPES.has(it.type)) stopSpeech(); }
   renderQuiz(false, true);
 }
 function next(){
+  const [from, to] = span();
+  if (quiz.exam && quiz.i >= to - 1){
+    const miss = quiz.items.slice(from, to).filter(x => !quiz.answers[x.it.id]).length;
+    if (miss && !confirm(tx(`還有 ${miss} 題沒作答，確定要交卷嗎？`, `未解答が ${miss} 問あります。提出しますか？`))) return;
+  }
   stopSpeech();
-  if (quiz.i < quiz.items.length - 1){ quiz.i++; renderQuiz(true); window.scrollTo(0,0); }
+  if (quiz.i < to - 1){ quiz.i++; renderQuiz(true); window.scrollTo(0,0); }
+  else if (quiz.full) endSection(false);
   else { stopClock(); renderResult(true); }
 }
 function goHome(){ stopClock(); stopSpeech(); quiz = null; renderHome(); window.scrollTo(0,0); }
+
+/* ---------------- Daily log, streak and today's tasks ----------------
+   store.days["YYYY-MM-DD"] = {q: questions answered, ok: correct, c: cards reviewed, nv/ng: new cards per level, done: {"task:level": 1}}.
+   Kept for 120 days. A day with any question or card keeps the streak going. */
+function dayKey(d){ d = d || new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+function dayNum(d){ d = d || new Date(); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000); }
+function todayLog(){ const k = dayKey(); return store.days[k] || (store.days[k] = {q:0, ok:0, c:0}); }
+function pruneDays(){ const old = dayKey(new Date(Date.now() - 120 * 86400000)); Object.keys(store.days).forEach(k => { if (k < old) delete store.days[k]; }); }
+function markDone(task){ if (!task) return; const t = todayLog(); t.done = t.done || {}; t.done[task + ":" + LV.key] = 1; }
+function isDone(task){ const t = store.days[dayKey()]; return !!(t && t.done && t.done[task + ":" + LV.key]); }
+function streak(){
+  const has = d => { const t = store.days[dayKey(d)]; return !!(t && t.q + t.c > 0); };
+  const d = new Date(); let n = 0;
+  if (!has(d)) d.setDate(d.getDate() - 1);
+  while (has(d)){ n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+
+/* ---------------- Spaced repetition (今日複習): words, grammar and the 生字本 ----------------
+   store.srs[key] = {b: box 0–6, d: day due}. Remembered → next box, due again 1, 2, 4, 7, 15 or 30 days later;
+   not yet → box 1, due tomorrow, and shown once more at the end of the session.
+   Keys: v:<level>:<word>, g:<level>:<grammar point>, m:<dictionary key>. New cards per level and day: 10 words, 3 grammar points.
+   生字本 words come up until they are first graded. 單字卡 only schedules the cards marked 還不熟 or already scheduled. */
+const SRS_GAP = [0, 1, 2, 4, 7, 15, 30];
+const NEW_PER_DAY = {v: 10, g: 3};
+function srsGrade(key, knew){
+  const s = store.srs[key] || {b: 0, d: 0}, t = dayNum();
+  if (knew){ s.b = Math.min(s.b + 1, SRS_GAP.length - 1); s.d = t + SRS_GAP[s.b]; }
+  else { s.b = 1; s.d = t + 1; }
+  store.srs[key] = s;
+}
+const vocabCard = v => ({...v, kind: "v", sk: `v:${LV.key}:${v.k}`});
+const grammarCard = g => ({...g, kind: "g", sk: `g:${LV.key}:${g.g}`});
+function myCard(k){ const e = JEK[k]; return {k: e.h, r: e.r, pos: clsLabel(e), zh: e.zh, ex: store.mywords[k] || "", exzh: e.note, key: k, kind: "m", sk: `m:${k}`}; }
+function reviewPlan(){
+  const t = dayNum(), lg = store.days[dayKey()] || {}, isDue = c => !!store.srs[c.sk] && store.srs[c.sk].d <= t;
+  const vs = VOCAB.map(vocabCard), gs = GRAMMAR.map(grammarCard);
+  const mine = Object.keys(store.mywords).filter(k => JEK[k]).map(myCard).filter(c => !store.srs[c.sk] || isDue(c));
+  const leftV = NEW_PER_DAY.v - ((lg.nv || {})[LV.key] || 0), leftG = NEW_PER_DAY.g - ((lg.ng || {})[LV.key] || 0);
+  return {
+    due: [...vs.filter(isDue), ...gs.filter(isDue), ...mine],
+    fresh: [...vs.filter(c => !store.srs[c.sk] && !store.known[c.k]).slice(0, Math.max(0, leftV)), ...gs.filter(c => !store.srs[c.sk]).slice(0, Math.max(0, leftG))]
+  };
+}
+function startReview(){
+  const {due, fresh} = reviewPlan(), cards = [...shuffle(due), ...fresh];
+  if (!cards.length) return goHome();
+  deck = {review: true, cards, i: 0, flipped: false, knew: 0, miss: 0};
+  renderCards(); window.scrollTo(0,0);
+}
+
+/* ---------------- Weak spots ---------------- */
+function typeAcc(t){ let r = 0, w = 0; (BY_TYPE[t] || []).forEach(it => { const s = statOf(it.id); if (s){ r += s.r; w += s.w; } }); return {n: r + w, acc: r + w ? r / (r + w) : null}; }
+const usable = t => tts.ok || !AUDIO_TYPES.has(t);
+function weakTypes(){ return Object.keys(TYPES).filter(usable).map(t => ({t, ...typeAcc(t)})).filter(x => x.n >= 4 && x.acc < .8).sort((a, b) => a.acc - b.acc).slice(0, 3); }
+function freshType(){ return Object.keys(TYPES).filter(usable).map(t => ({t, ...typeStats([t])})).filter(x => x.total).sort((a, b) => a.seen / a.total - b.seen / b.total)[0]; }
+
+/* ---------------- 完整模考: the real test's sections, order and times ----------------
+   One section at a time with its own countdown; time up hands the section in. Question counts per type: FULL_MOCK. */
+function startFullMock(){
+  stopSpeech(); stopClock();
+  const sections = LV.exam.map(([name, min, secs], k) => ({name, min, audio: secs.includes("chokai"), steps: FULL_MOCK[LV.key][k]}));
+  const items = [];
+  sections.forEach(s => {
+    if (s.audio && !tts.ok){ s.skipped = true; return; }
+    s.from = items.length; items.push(...runSteps(s.steps)); s.to = items.length;
+    if (s.to === s.from) s.skipped = true;
+  });
+  if (!items.length) return goHome();
+  quiz = {mode: "full", exam: true, full: true, i: 0, answers: {}, start: Date.now(), sections, sec: -1, task: pendingTask,
+          items: items.map(it => ({it, order: it.fixed ? it.fixed.slice() : shuffle(it.o.map((_,k) => k)), reveal: false}))};
+  pendingTask = null;
+  nextSection();
+}
+function nextSection(){
+  stopClock(); stopSpeech();
+  let k = quiz.sec + 1;
+  while (k < quiz.sections.length && quiz.sections[k].skipped) k++;
+  if (k >= quiz.sections.length){ quiz.end = Date.now(); renderResult(true); return; }
+  quiz.sec = k; renderFullBreak(); window.scrollTo(0,0);
+}
+function beginSection(){
+  const s = quiz.sections[quiz.sec];
+  s.start = Date.now(); quiz.i = s.from;
+  startClock(); renderQuiz(true); window.scrollTo(0,0);
+}
+function endSection(timeUp){
+  const s = quiz.sections[quiz.sec];
+  if (!s || !s.start || s.end) return;
+  s.end = Date.now(); s.timeUp = !!timeUp;
+  nextSection();
+}
+function renderFullBreak(){
+  view = "fullbreak"; $app.dataset.view = view; resetLook();
+  const ss = quiz.sections, now = ss[quiz.sec], prev = ss.slice(0, quiz.sec).reverse().find(s => s.end);
+  const rows = ss.map((s, k) => {
+    const n = s.skipped ? 0 : s.to - s.from, ans = s.skipped ? 0 : quiz.items.slice(s.from, s.to).filter(x => quiz.answers[x.it.id]).length;
+    const st = s.skipped ? tx("略過：這台裝置沒有日文語音", "スキップ：日本語音声なし")
+      : s.end ? tx(`完成・作答 ${ans}/${n}${s.timeUp ? "・時間到" : ""}`, `終了・解答 ${ans}/${n}${s.timeUp ? "・時間切れ" : ""}`)
+      : k === quiz.sec ? tx("下一節", "次の科目") : tx("還沒開始", "これから");
+    return `<li class="${k === quiz.sec ? "cur" : ""}"><b lang="ja">${s.name}</b><span>${s.min} ${tx("分鐘", "分")}${s.skipped ? "" : tx(`・${n} 題`, `・${n} 問`)}</span><em>${st}</em></li>`;
+  }).join("");
+  const msg = prev ? tx(`「${prev.name}」結束${prev.timeUp ? "（時間到，自動交卷）" : ""}。可以先休息一下，準備好再開始下一節。`, `「${prev.name}」終了${prev.timeUp ? "（時間切れで自動提出）" : ""}。少し休んで、準備ができたら次の科目へ。`)
+    : tx("照正式考試的節次和時間，每一節倒數計時，時間到會自動交卷。交卷前可以改答案，也可以點上面的題號跳題；解析和查字要全部考完才看得到。聽解會自動播放（正式考試只播一次，這裡可以重播）。",
+         "本番と同じ科目順・時間で、科目ごとにカウントダウンします。時間になると自動で提出されます。提出前なら答えを変えられ、上の番号で移動できます。解説と辞書はすべて終わってから使えます。聴解は自動で再生されます（本番は一回だけですが、ここでは再生し直せます）。");
+  $app.innerHTML = `${prefsHTML()}
+    <div class="qtop">${back()}<div class="qtitle">${tx("完整模考", "本番形式の模試")}</div></div>
+    <section class="sheet fullbreak">
+      <p class="fb-msg">${msg}</p>
+      <ol class="secs">${rows}</ol>
+      <div class="row"><button class="btn" data-act="fullgo">${tx(`開始這一節（${now.min} 分鐘）`, `この科目を始める（${now.min} 分）`)}</button></div>
+    </section>`;
+}
 
 /* ---------------- Full-sentence answers for explanations ---------------- */
 function fullHTML(it){
@@ -5280,32 +5640,37 @@ function explainHTML(q, a){
 }
 /* Notes are Chinese with Japanese inside 「」; mark the quoted bits as ja */
 function noteHTML(s){ return esc(s).replace(RUBY_RE, (m,b,r) => `<ruby>${b}<rt>${r}</rt></ruby>`).replace(/「([^」]+)」/g, '<span lang="ja">「$1」</span>'); }
+/* The script of a listening item; each line has a button that reads just that line again */
 function transcriptHTML(q){
   const it = q.it;
   const sp = r => ({m:tx("男", "男"), f:tx("女", "女"), m2:tx("男2", "男2"), f2:tx("女2", "女2"), n:tx("旁白", "ナレーター")}[r] || "");
+  const line = (role, xs, label) => {
+    xs = [].concat(xs);
+    const say = tts.ok ? `<button type="button" class="lp" data-act="line" data-r="${role}" data-t="${esc(xs.map(plain).join(""))}" aria-label="${tx("念這一句", "この文を再生")}">${ICON_PLAY}</button>` : "";
+    return `<p>${say}<span class="sp">${label == null ? sp(role) : label}</span>${xs.map(x => jp(x)).join("")}</p>`;
+  };
+  /* the options are said by the same voices as in audioParts() */
+  const optRole = it.type === "hatsuwa" ? (it.who || "f") : it.type === "sokuji" ? (it.line[0] === "m" ? "f" : "m") : "n";
+  const opts = () => q.order.map((k,i) => line(optRole, it.o[k], NUMS[i])).join("");
   let t = "";
   if (it.type === "kadai" || it.type === "point"){
-    t += `<p><span class="sp">${sp("n")}</span>${jp(it.intro)}${jp(it.q)}</p>`;
-    it.lines.forEach(([r,x]) => t += `<p><span class="sp">${sp(r)}</span>${jp(x)}</p>`);
+    t += line("n", [it.intro, it.q]);
+    it.lines.forEach(([r,x]) => t += line(r, x));
   } else if (spokenQ(it)){
-    t += `<p><span class="sp">${sp("n")}</span>${jp(it.intro)}</p>`;
-    it.lines.forEach(([r,x]) => t += `<p><span class="sp">${sp(r)}</span>${jp(x)}</p>`);
-    t += `<p><span class="sp">${sp("n")}</span>${jp(it.q)}</p>`;
-    q.order.forEach((k,i) => t += `<p><span class="sp">${NUMS[i]}</span>${jp(it.o[k])}</p>`);
+    t += line("n", it.intro);
+    it.lines.forEach(([r,x]) => t += line(r, x));
+    t += line("n", it.q) + opts();
   } else if (it.type === "togoc"){
-    t += `<p><span class="sp">${sp("n")}</span>${jp(it.intro)}</p>`;
-    it.lines.forEach(([r,x]) => t += `<p><span class="sp">${sp(r)}</span>${jp(x)}</p>`);
-    t += `<p><span class="sp">${sp("n")}</span>${jp(qLabel(it) + it.q)}</p>`;
+    t += line("n", it.intro);
+    it.lines.forEach(([r,x]) => t += line(r, x));
+    t += line("n", qLabel(it) + it.q);
   } else if (it.type === "hatsuwa"){
-    t += `<p><span class="sp">${sp("n")}</span>${jp(it.ja)}</p>`;
-    q.order.forEach((k,i) => t += `<p><span class="sp">${NUMS[i]}</span>${jp(it.o[k])}</p>`);
+    t += line("n", it.ja) + opts();
   } else {
-    t += `<p><span class="sp">${sp(it.line[0])}</span>${jp(it.line[1])}</p>`;
-    q.order.forEach((k,i) => t += `<p><span class="sp">${NUMS[i]}</span>${jp(it.o[k])}</p>`);
+    t += line(it.line[0], it.line[1]) + opts();
   }
   return `<div class="transcript">${t}</div>`;
 }
-
 /* ---------------- Render: quiz ---------------- */
 const PLABEL = {"留言":"メモ","公告":"お知らせ","電子郵件":"メール","短文":"短文","課程表":"クラス案内","說明":"案内","廣告":"広告","比較閱讀":"読み比べ","評論":"評論","隨筆":"エッセイ","說明文":"説明文","小說":"小説","文章":"文章"};
 function passageHTML(it){
@@ -5330,7 +5695,7 @@ function audioHTML(q, a){
   if (it.type === "hatsuwa") h += `<p class="situ"><span${ZH}>${esc(it.sit)}</span><span class="ja" lang="ja">${jpHTML(it.ja)}</span></p>`;
   if (it.type === "kadai" || it.type === "point") h += `<p class="prompt small fz" lang="ja">${jpHTML(it.q)}</p>`;
   if (it.type === "togoc" && it.printed && it.gn > 1) h += `<p class="prompt small" lang="ja">質問${it.gi}<span class="qsub"${ZH}>${tx("（問題用聽的，畫面只印選項）", "（質問は音声だけです）")}</span></p>`;
-  if (q.reveal && !a) h += transcriptHTML(q);
+  if (q.reveal && (!a || quiz.exam)) h += transcriptHTML(q);
   return h;
 }
 function audioNote(){
@@ -5342,18 +5707,21 @@ function refreshAudioNote(){ const n = document.getElementById("anote"); if (n) 
 function optionsHTML(q, a){
   const it = q.it;
   const spoken = spokenOpts(it);
+  /* open: answered in practice, so right/wrong shows; in exams the options stay buttons and the answer can change */
+  const open = !!a && !quiz.exam;
   const long = it.type === "iikae" || it.type === "yoho" || PASSAGE_TYPES.has(it.type) || it.type === "kadai" || it.type === "point" || it.type === "gaiyo" || it.type === "togoc";
   const short = !long && !spoken && q.order.every(k => plain(it.o[k]).length <= 8);
   return `<div class="opts${short ? " grid2" : ""}">` + q.order.map((k,i) => {
-    const txt = (spoken && !a && !q.reveal) ? `<span class="hid">${tx(`（聽第 ${i+1} 個說法）`, `（${i+1} 番目を聞く）`)}</span>` : `<span lang="ja" class="fz">${jpHTML(it.o[k], null, it.type === "kanji" || it.type === "hyoki")}</span>`;
+    const txt = (spoken && !open && !q.reveal) ? `<span class="hid">${tx(`（聽第 ${i+1} 個說法）`, `（${i+1} 番目を聞く）`)}</span>` : `<span lang="ja" class="fz">${jpHTML(it.o[k], null, it.type === "kanji" || it.type === "hyoki")}</span>`;
     let cls = "opt" + (long ? " long" : "");
     let mk = "";
     if (a){
       if (a.pick === i) cls += " picked";
-      if (!quiz.exam){ if (k === ansOf(it)){ cls += " right"; mk = tx("正解", "正解"); } else if (a.pick === i){ cls += " wrong"; mk = tx("你的答案", "あなたの答え"); } }
+      if (open){ if (k === ansOf(it)){ cls += " right"; mk = tx("正解", "正解"); } else if (a.pick === i){ cls += " wrong"; mk = tx("你的答案", "あなたの答え"); } }
     }
-    const tag = a ? "div" : "button";
-    return `<${tag} class="${cls}"${a ? "" : ` data-act="pick" data-i="${i}"`}><span class="bub">${NUMS[i]}</span>${txt}<span class="mk">${mk}</span></${tag}>`;
+    const tag = open ? "div" : "button";
+    const attr = open ? "" : ` data-act="pick" data-i="${i}"${quiz.exam ? ` aria-pressed="${a && a.pick === i ? "true" : "false"}"` : ""}`;
+    return `<${tag} class="${cls}"${attr}><span class="bub">${NUMS[i]}</span>${txt}<span class="mk">${mk}</span></${tag}>`;
   }).join("") + `</div>`;
 }
 function renderQuiz(anim, justPicked){
@@ -5361,7 +5729,14 @@ function renderQuiz(anim, justPicked){
   view = it.passage ? "quiz-p" : "quiz";
   $app.dataset.view = view; resetLook();
   $app.dataset.look = quiz.exam ? "off" : (a ? "" : "pre");
-  const strip = quiz.items.map((x,i) => { const aa = quiz.answers[x.it.id]; let c = ""; if (i === quiz.i) c = "cur"; else if (aa) c = quiz.exam ? "done" : (aa.ok ? "ok" : "ng"); return `<i class="${c}">${i+1}</i>`; }).join("");
+  const [from, to] = span(), last = quiz.i === to - 1;
+  /* question numbers; in exams they are buttons for jumping back to a skipped question */
+  const strip = quiz.items.slice(from, to).map((x, j) => {
+    const i = from + j, aa = quiz.answers[x.it.id];
+    const c = [i === quiz.i ? "cur" : "", aa ? (quiz.exam ? "done" : (aa.ok ? "ok" : "ng")) : ""].filter(Boolean).join(" ");
+    if (!quiz.exam) return `<i class="${c}">${j+1}</i>`;
+    return `<button type="button" class="${c}" data-act="jump" data-i="${i}" aria-label="${tx(`第 ${j+1} 題${aa ? "，已作答" : ""}`, `${j+1} 問目${aa ? "（解答済み）" : ""}`)}"${i === quiz.i ? ' aria-current="step"' : ""}>${j+1}</button>`;
+  }).join("");
   let body = "";
   if (it.type === "yoho") body += `<p class="word" lang="ja">${jpHTML(it.p)}</p>`;
   else if (["narabe","bunpo","bunmyaku","gokei","kanji","hyoki","iikae"].includes(it.type)) body += `<p class="prompt fz" lang="ja">${jpHTML(it.p)}</p>`;
@@ -5369,17 +5744,23 @@ function renderQuiz(anim, justPicked){
   if (AUDIO_TYPES.has(it.type)) body = audioHTML(q, a) + body;
   body += optionsHTML(q, a);
   if (a && !quiz.exam) body += explainHTML(q, a);
-  const head = `<div class="qnum"><span class="ptag" lang="ja">${T.no} ${T.name}</span><span>${esc(L2(T.inst))}</span><button class="btn-ghost furi-btn" data-act="furi" aria-pressed="${store.furi ? "true" : "false"}">${tx("假名", "ふりがな")}</button></div>`;
-  const last = quiz.i === quiz.items.length - 1;
-  const nav = a ? `<div class="qnav"><button class="btn" data-act="next" id="nextbtn">${last ? (quiz.exam ? tx("交卷看結果", "提出して結果を見る") : tx("看結果", "結果を見る")) : tx("下一題", "次へ")}</button></div>` :
-                  (quiz.exam ? `<div class="qnav"><button class="btn alt" data-act="skip">${last ? tx("交卷", "提出") : tx("先跳過", "とばす")}</button></div>` : "");
+  const tools = `<span class="qtools">${quiz.exam ? "" : `<button class="btn-ghost" data-act="guide" aria-expanded="${quiz.guide ? "true" : "false"}">${tx("攻略", "攻略")}</button>`}<button class="btn-ghost furi-btn" data-act="furi" aria-pressed="${store.furi ? "true" : "false"}">${tx("假名", "ふりがな")}</button></span>`;
+  const head = `<div class="qnum"><span class="ptag" lang="ja">${T.no} ${T.name}</span><span>${esc(L2(T.inst))}</span>${tools}</div>${quiz.guide && !quiz.exam ? `<div class="guide-box">${guideHTML(it.type)}</div>` : ""}`;
+  const endLabel = quiz.full ? tx("交卷（這一節）", "この科目を提出") : quiz.exam ? tx("交卷看結果", "提出して結果を見る") : tx("看結果", "結果を見る");
+  const nav = a ? `<div class="qnav"><button class="btn" data-act="next" id="nextbtn">${last ? endLabel : tx("下一題", "次へ")}</button></div>` :
+                  (quiz.exam ? `<div class="qnav"><button class="btn alt" data-act="skip">${last ? endLabel : tx("先跳過", "とばす")}</button></div>` : "");
+  /* last question of an exam: point back to the ones left blank */
+  const miss = quiz.exam && last ? quiz.items.slice(from, to).map((x, j) => quiz.answers[x.it.id] || from + j === quiz.i ? -1 : from + j).filter(i => i >= 0) : [];
+  const unans = miss.length ? `<p class="unans">${tx(`還有 ${miss.length} 題沒作答`, `未解答が ${miss.length} 問あります`)}<button class="btn-ghost" data-act="jump" data-i="${miss[0]}">${tx(`回到第 ${miss[0] - from + 1} 題`, `${miss[0] - from + 1} 問目に戻る`)}</button></p>` : "";
+  const hint = quiz.exam ? tx("交卷前都可以改答案；點上面的題號可以跳回去。", "提出前なら答えを変えられます。上の番号で前の問題に戻れます。")
+    : a ? tx("點日文單字可以看中文和說明。", "単語をタップすると中国語の意味と説明が出ます。") : tx("點日文單字可以看中文和說明；選項和畫底線的字要作答後才能查。", "単語をタップすると中国語の意味と説明が出ます。選択肢と下線の語は解答後に調べられます。");
   $app.innerHTML = `${prefsHTML()}
     <div class="qtop">${back()}<div class="qtitle" lang="ja">${esc(quizTitle())}</div>
-      <div class="qcount">${quiz.exam ? `<span class="tl" id="clock">${mmss(Date.now() - quiz.start)}</span>` : ""}${quiz.i+1}/${quiz.items.length}</div></div>
-    <div class="strip" aria-hidden="true">${strip}</div>
+      <div class="qcount">${quiz.exam ? `<span class="tl${quiz.full && secLeft() < 5 * 60000 ? " warn" : ""}" id="clock">${clockText()}</span>` : ""}${quiz.i - from + 1}/${to - from}</div></div>
+    <div class="strip"${quiz.exam ? ` role="group" aria-label="${tx("題號", "問題番号")}"` : ' aria-hidden="true"'}>${strip}</div>
     <section class="sheet qcard${it.passage ? " has-p" : ""}">${it.passage ? passageHTML(it) : ""}<div>${head}${body}</div></section>
-    ${nav}
-    ${quiz.exam ? "" : `<p class="lookhint">${a ? tx("點日文單字可以看中文和說明。", "単語をタップすると中国語の意味と説明が出ます。") : tx("點日文單字可以看中文和說明；選項和畫底線的字要作答後才能查。", "単語をタップすると中国語の意味と説明が出ます。選択肢と下線の語は解答後に調べられます。")}</p>`}
+    ${unans}${nav}
+    <p class="lookhint">${hint}</p>
     <p class="kbd">${tx("鍵盤：", "キー：")}<kbd>1</kbd>–<kbd>4</kbd> ${tx("作答", "で解答")}　<kbd>Enter</kbd> ${tx("下一題", "で次へ")}${AUDIO_TYPES.has(it.type) ? `　<kbd>${tx("空白鍵", "スペース")}</kbd> ${tx("播放", "で再生")}` : ""}</p>`;
   if (justPicked && !reduceMotion){ const p = $app.querySelector(".opt.picked"); if (p) p.classList.add("anim"); }
   if (justPicked){ const nb = document.getElementById("nextbtn"); if (nb) nb.focus({preventScroll:true}); const ex = $app.querySelector(".explain"); if (ex && ex.getBoundingClientRect().top > innerHeight - 80) ex.scrollIntoView({behavior: reduceMotion ? "auto" : "smooth", block:"nearest"}); }
@@ -5389,7 +5770,6 @@ function renderQuiz(anim, justPicked){
     speakSeq(audioParts(it, q.order, !!(it.grp && prev && prev.it.grp === it.grp)));
   }, 350);
 }
-
 /* ---------------- Render: result ---------------- */
 function snippet(it){
   if (it.type === "kadai" || it.type === "point" || it.type === "gaiyo" || it.type === "togoc") return [plain(qLabel(it) + it.q), "ja"];
@@ -5400,7 +5780,8 @@ function snippet(it){
 }
 function renderResult(first){
   view = "result"; $app.dataset.view = view; resetLook();
-  const list = quiz.items, n = list.length;
+  const list = quiz.items, n = list.length, mockish = quiz.mode === "mock" || !!quiz.full;
+  if (first && quiz.exam && !quiz.committed){ list.forEach(x => { const a = quiz.answers[x.it.id]; if (a) commitAnswer(x.it, a.ok); }); quiz.committed = true; }
   const isOk = x => !!(quiz.answers[x.it.id] && quiz.answers[x.it.id].ok);
   const ok = list.filter(isOk).length;
   const pct = Math.round(ok / n * 100);
@@ -5411,20 +5792,38 @@ function renderResult(first){
     bySec[s] = bySec[s] || [0,0]; bySec[s][1]++; byType[t] = byType[t] || [0,0]; byType[t][1]++;
     if (isOk(x)){ bySec[s][0]++; byType[t][0]++; }
   });
-  const msg = pct >= 80 ? tx("很穩，考前保持手感就好", "安定しています。この調子で！") : pct >= 60 ? tx("及格邊緣以上，把錯題再看一次", "合格ライン以上。間違えた問題をもう一度") : tx("先別慌，錯題本會幫你收好", "大丈夫、間違えた問題はリストに残っています");
-  if (first && quiz.mode === "mock"){ const prev = store[bestKey()]; if (!prev || pct > prev.pct){ store[bestKey()] = {pct, at: Date.now()}; save(); } }
-  if (first) quiz.end = Date.now();
+  const est = mockish ? estimateScore(list) : null;
+  /* mocks: the message follows the rough score (a 30-point margin over the pass mark counts as safe); practice: the share right */
+  const msg = est && est.pass === false ? tx("還沒到合格線，先補分數最低的那一科", "合格ラインに届いていません。点の低い区分から補強しましょう")
+    : est && est.pass ? (est.total >= LV.pass.total + 30 ? tx("很穩，考前保持手感就好", "安定しています。この調子で！") : tx("過了合格線，但還不夠穩，把錯題再看一次", "合格ラインは超えていますが、まだ余裕がありません。間違えた問題をもう一度"))
+    : pct >= 80 ? tx("很穩，考前保持手感就好", "安定しています。この調子で！") : pct >= 60 ? tx("及格邊緣以上，把錯題再看一次", "合格ライン以上。間違えた問題をもう一度") : tx("先別慌，錯題本會幫你收好", "大丈夫、間違えた問題はリストに残っています");
+  if (first){
+    if (!quiz.end) quiz.end = Date.now();
+    if (quiz.mode === "mock"){ const prev = store[bestKey()]; if (!prev || pct > prev.pct) store[bestKey()] = {pct, at: Date.now()}; }
+    if (mockish){
+      const arr = store.mocks[LV.key] = store.mocks[LV.key] || [];
+      arr.push({at: Date.now(), kind: quiz.full ? "full" : "mini", pct, est: est.complete ? est.total : null, pass: est.pass});
+      if (arr.length > 20) arr.splice(0, arr.length - 20);
+    }
+    markDone(quiz.task);
+    if (quiz.full) markDone("full");
+    if (quiz.mode === "sec:chokai") markDone("listen");
+    pruneDays(); save();
+  }
   const wrongN = n - ok;
+  const used = quiz.full ? "" : quiz.exam ? `・${tx("用時", "所要時間")} ${mmss(quiz.end - quiz.start)}` : "";
+  const secTimes = quiz.full ? `<div class="parts">${quiz.sections.map(s => `<span><em lang="ja">${s.name}</em> ${s.skipped ? tx("略過", "スキップ") : `${mmss((s.end || quiz.end) - s.start)}／${s.min}:00${s.timeUp ? tx("・時間到", "・時間切れ") : ""}`}</span>`).join("")}</div>` : "";
   $app.innerHTML = `${prefsHTML()}
     <div class="qtop">${back()}<div class="qtitle" lang="ja">${esc(quizTitle())}・${tx("結果", "結果")}</div></div>
     <section class="sheet">
-      <div class="score"><div class="big">${ok}<small>/${n}</small></div><div class="msg2"><b>${msg}</b><span>${tx("正確率", "正答率")} ${pct}%${quiz.exam ? `・${tx("用時", "所要時間")} ${mmss((quiz.end || Date.now()) - quiz.start)}` : ""}</span></div></div>
-      ${Object.keys(bySec).length > 1 ? `<div class="parts">${Object.entries(bySec).map(([k,v]) => `<span><em lang="ja">${k}</em> ${v[0]}/${v[1]}</span>`).join("")}</div>` : ""}
+      <div class="score"><div class="big">${ok}<small>/${n}</small></div><div class="msg2"><b>${msg}</b><span>${tx("正確率", "正答率")} ${pct}%${used}</span></div></div>
+      ${secTimes}
+      ${est ? estHTML(est) : Object.keys(bySec).length > 1 ? `<div class="parts">${Object.entries(bySec).map(([k,v]) => `<span><em lang="ja">${k}</em> ${v[0]}/${v[1]}</span>`).join("")}</div>` : ""}
       <div class="parts">${Object.entries(byType).map(([t,v]) => `<span><em lang="ja">${TYPES[t].name}</em> ${v[0]}/${v[1]}</span>`).join("")}</div>
-      ${quiz.mode === "mock" ? `<p class="note" style="padding:12px 16px 0;margin:0">${passNote()}</p>` : ""}
+      ${mockish ? `<p class="note" style="padding:12px 16px 0;margin:0">${passNote()}</p>` : ""}
       <div class="qnav" style="padding:14px 16px">
         ${wrongN ? `<button class="btn alt" data-act="retry">${tx(`重練這次的錯題（${wrongN}）`, `今回の間違いを復習（${wrongN}）`)}</button>` : ""}
-        <button class="btn" data-act="again">${quiz.mode === "mock" ? tx("再考一次", "もう一度受ける") : tx("再練 10 題", "もう 10 問")}</button>
+        <button class="btn" data-act="again">${mockish ? tx("再考一次", "もう一度受ける") : tx("再練 10 題", "もう 10 問")}</button>
       </div>
     </section>
     <section class="sheet"><div class="sec-head">${tx("逐題檢討", "解答の確認")}<small>${tx("點一題看解析", "タップで解説")}</small></div><div class="rlist">
@@ -5435,14 +5834,41 @@ function renderResult(first){
   if (first) window.scrollTo(0,0);
 }
 
+/* Rough score for each 得点区分: the share answered right times that section's full marks.
+   The real test uses scaled scores (equating), so this is only a guide. Rows follow LV.pass.rows, groups follow LV.score. */
+function estimateScore(list){
+  const groups = [...new Set(Object.values(LV.score))], got = {};
+  list.forEach(x => { const g = LV.score[TYPES[x.it.type].sec], c = got[g] = got[g] || [0, 0]; c[1]++; if (quiz.answers[x.it.id] && quiz.answers[x.it.id].ok) c[0]++; });
+  const rows = LV.pass.rows.map((r, i) => { const c = got[groups[i]]; return {zh: r[0], ja: r[1], min: r[2], max: r[3], ok: c ? c[0] : 0, n: c ? c[1] : 0, pts: c ? Math.round(c[0] / c[1] * r[3]) : null}; });
+  const complete = rows.every(r => r.pts != null), total = rows.reduce((s, r) => s + (r.pts || 0), 0);
+  const low = rows.filter(r => r.pts != null && r.pts < r.min);
+  return {rows, complete, total, low, pass: low.length ? false : complete ? total >= LV.pass.total : null};
+}
+function estHTML(e){
+  const P = LV.pass;
+  const rows = e.rows.map(r => `<tr><th${lang === "ja" ? ' lang="ja"' : ""}>${esc(lang === "ja" ? r.ja : r.zh)}</th>${r.pts == null ? `<td colspan="3" class="na">${tx("這次沒考", "今回はなし")}</td>` : `<td>${r.ok}/${r.n}</td><td class="${r.pts >= r.min ? "ok" : "ng"}"><b>${r.pts}</b>/${r.max}</td><td>${r.min}</td>`}</tr>`).join("");
+  const tot = `<tr class="tot"><th>${tx("總分", "総合得点")}</th><td></td><td class="${e.complete ? (e.total >= P.total ? "ok" : "ng") : ""}">${e.complete ? `<b>${e.total}</b>/180` : "—"}</td><td>${P.total}</td></tr>`;
+  const why = [];
+  if (e.complete && e.total < P.total) why.push(tx(`總分不到 ${P.total}`, `総合得点が ${P.total} 点未満`));
+  e.low.forEach(r => why.push(tx(`「${r.zh}」低於基準點 ${r.min}`, `「${r.ja}」が基準点 ${r.min} 点未満`)));
+  const verdict = e.pass === true ? `<p class="verdict-line ok">${tx("粗估：合格", "推定：合格")}<small>${tx("每一科都過基準點，總分也夠", "すべての区分が基準点以上で、総合得点も足りています")}</small></p>`
+    : e.pass === false ? `<p class="verdict-line ng">${tx("粗估：還沒到合格線", "推定：合格ラインに届かず")}<small>${why.join(tx("；", "、"))}</small></p>`
+    : `<p class="verdict-line">${tx("這次沒考聽解，無法判斷是否合格", "聴解がないため、合否は判定できません")}</p>`;
+  return `<div class="est">
+    <table><thead><tr><th>${tx("得點區分", "得点区分")}</th><th>${tx("答對", "正解")}</th><th>${tx("粗估分數", "推定点")}</th><th>${tx("基準點", "基準点")}</th></tr></thead><tbody>${rows}${tot}</tbody></table>
+    ${verdict}
+    <p class="note">${tx(`粗估方法：每個得點區分用答對比例乘上滿分。正式考試的分數是經過等化的「尺度得點」，不是直接用答對題數換算，所以只能當參考。${quiz.full ? "" : "迷你模考題數少，誤差更大。"}`,
+      `推定方法：得点区分ごとの正答率 × 満点。本番の得点は等化された尺度得点で、正解数からそのまま計算するものではないため、目安としてご覧ください。${quiz.full ? "" : "ミニ模試は問題数が少ないので、誤差が大きくなります。"}`)}</p>
+  </div>`;
+}
+
 function passNote(){
   const P = LV.pass, r = P.rows, same = r.every(x => x[2] === r[0][2] && x[3] === r[0][3]);
   const zh = same ? `${r.map(x => `「${x[0]}」`).join("")}${["", "一", "兩", "三"][r.length]}科都至少 ${r[0][2]}/${r[0][3]}` : r.map(x => `「${x[0]}」至少 ${x[2]}/${x[3]}`).join("、");
   const ja = same ? `${r.map(x => `「${x[1]}」`).join("")}がそれぞれ ${r[0][2]}/${r[0][3]} 以上` : r.map(x => `「${x[1]}」${x[2]}/${x[3]} 以上`).join("、") + "が";
-  return tx(`正式考試合格要總分 ${P.total}/180，而且${zh}。這裡的題目是自編的，正確率只能當參考，不能換算成正式分數。`,
-            `本番の合格には総合得点 ${P.total}/180 以上、かつ${ja}必要です。ここの問題はオリジナルなので、正答率は目安です。本番の得点には換算できません。`);
+  return tx(`正式考試合格要總分 ${P.total}/180，而且${zh}。這裡的題目是自編的，分數只是粗估。`,
+            `本番の合格には総合得点 ${P.total}/180 以上、かつ${ja}必要です。ここの問題はオリジナルなので、点数は目安です。`);
 }
-
 /* ---------------- Render: home ---------------- */
 function daysLeft(){ const ms = EXAM.start - Date.now(); return Math.ceil(ms / 86400000); }
 function examLabel(){ return tx("2026/12/6（日）", "2026年12月6日（日）"); }
@@ -5466,11 +5892,70 @@ const CHECKS = [
   ["route",  ["確認考場和入場時間","入場時間、教室寫在准考證上；提早到"], ["会場と集合時間の確認","集合時間と教室は受験票に記載。早めに到着"]],
   ["sleep",  ["前一晚早點睡","只看「文法速查」和錯題本，不再背新東西"], ["前日は早く寝る","「文法一覧」と間違えた問題だけ見て、新しいことは覚えない"]]
 ];
+/* What to focus on, by days left before the exam */
+function phaseText(){
+  const d = daysLeft();
+  if (d > 30) return tx(`離考試 ${d} 天，打基礎：每天背單字和文法，各題型輪流練。`, `試験まで ${d} 日。基礎固め：毎日単語と文法を覚え、各形式をまんべんなく練習。`);
+  if (d > 14) return tx(`離考試 ${d} 天，練熟題型：弱的題型多練，每週做一次完整模考。`, `試験まで ${d} 日。形式に慣れる時期：弱い形式を重点的に、週に一回は本番形式の模試を。`);
+  if (d > 3) return tx(`離考試 ${d} 天，衝刺期：大約每 3 天做一次完整模考，其他時間練錯題和弱點。`, `試験まで ${d} 日。追い込み期：3日に一回は本番形式の模試、ほかは間違えた問題と弱点を。`);
+  if (d > 0) return tx(`離考試 ${d} 天，最後調整：不再背新東西，只看錯題本、生字本和文法速查，早點睡。`, `試験まで ${d} 日。最終調整：新しいことは覚えず、間違えた問題・単語帳・文法一覧を見直して早めに寝る。`);
+  if (d > -1) return tx("今天考試，加油！出門前只看錯題本和文法速查。", "今日は試験日。がんばって！出かける前は間違えた問題と文法一覧だけ。");
+  return tx("12/6 的考試已經結束。要準備下一次考試，就照今日任務的步調繼續練。", "12/6 の試験は終わりました。次の試験に向けて、今日のメニューのペースで続けましょう。");
+}
+/* Today's tasks: due cards, the weakest item type (or one not tried yet), listening, and a full mock near the exam */
+function todayTasks(){
+  const out = [], d = daysLeft(), jn = t => `<span lang="ja">${TYPES[t].name}</span>`;
+  const p = reviewPlan(), nR = p.due.length + p.fresh.length;
+  out.push({key: "review", act: "review", off: !nR, done: isDone("review") || !nR, title: tx("今日複習", "今日の復習"),
+    desc: nR ? tx(`到期 ${p.due.length} 張・新卡 ${p.fresh.length} 張（單字、文法、生字本）`, `復習 ${p.due.length} 枚・新規 ${p.fresh.length} 枚（単語・文法・単語帳）`) : tx("今天的卡片都複習完了", "今日のカードは終わりました")});
+  const w = weakTypes()[0];
+  if (w) out.push({key: "weak", act: "type", t: w.t, done: isDone("weak"), title: tx("補弱點：", "弱点：") + jn(w.t), desc: tx(`答對率 ${Math.round(w.acc * 100)}%，再練一組`, `正答率 ${Math.round(w.acc * 100)}%。もう一度練習`)});
+  else { const f = freshType(); if (f && f.seen < f.total) out.push({key: "weak", act: "type", t: f.t, done: isDone("weak"), title: tx("練新題型：", "新しい形式：") + jn(f.t), desc: tx(`做過 ${f.seen}/${f.total} 題`, `解答済み ${f.seen}/${f.total} 問`)}); }
+  if (tts.ok) out.push({key: "listen", act: "secmix", s: "chokai", done: isDone("listen"), title: tx("聽解 10 題", "聴解 10 問"), desc: tx("每天聽一點，耳朵才會習慣速度", "毎日少しずつ聞いて、耳を慣らす")});
+  const recent = (store.mocks[LV.key] || []).some(m => m.kind === "full" && Date.now() - m.at < 3 * 86400000);
+  const mins = LV.exam.reduce((s, e) => s + e[1], 0);
+  if (d > 0 && d <= 30 && (!recent || isDone("full"))) out.push({key: "full", act: "fullmock", done: isDone("full"), title: tx("完整模考", "本番形式の模試"), desc: tx(`照正式時間共 ${mins} 分鐘，交卷後估分數`, `本番と同じ計 ${mins} 分。提出後に得点を推定`)});
+  return out;
+}
+function todayHTML(){
+  const lg = store.days[dayKey()] || {q:0, c:0}, done = lg.q + lg.c, goal = store.goal || 30, st = streak();
+  const tasks = todayTasks(), nDone = tasks.filter(k => k.done).length;
+  const items = tasks.map((k, i) => `<li class="${k.done ? "done" : ""}"><button type="button" data-act="${k.act}" data-task="${k.key}"${k.t ? ` data-t="${k.t}"` : ""}${k.s ? ` data-s="${k.s}"` : ""}${k.off ? " disabled" : ""}><span class="tk" aria-hidden="true">${k.done ? "✓" : i + 1}</span><span class="tx"><b>${k.title}</b><small>${k.desc}</small></span><span class="go" aria-hidden="true">›</span></button></li>`).join("");
+  return `<section class="sheet today">
+    <div class="sec-head">${tx("今日任務", "今日のメニュー")}<small>${tx(`完成 ${nDone}/${tasks.length}`, `完了 ${nDone}/${tasks.length}`)}</small></div>
+    <div class="goal">
+      <div class="goal-top"><span class="streak">${st ? tx(`<b>${st}</b> 天連續練習`, `<b>${st}</b> 日連続`) : tx("今天練一題，就開始累積連續天數", "今日の1問から連続記録スタート")}</span><span class="goal-n">${tx("今天", "今日")} <b>${done}</b>/${goal}<small>${tx(" 題＋卡", " 問＋枚")}</small></span></div>
+      <div class="bar" role="progressbar" aria-label="${tx("今日目標", "今日の目標")}" aria-valuemin="0" aria-valuemax="${goal}" aria-valuenow="${Math.min(done, goal)}"><i style="width:${Math.min(100, Math.round(done / goal * 100))}%"></i></div>
+      <div class="goal-set"><span>${tx("每日目標", "1日の目標")}</span>${[10, 20, 30, 50].map(n => `<button type="button" class="chip" data-act="goal" data-n="${n}" aria-pressed="${goal === n}">${n}</button>`).join("")}</div>
+      <p class="phase">${phaseText()}</p>
+    </div>
+    <ol class="tasks">${items}</ol>
+  </section>`;
+}
+/* The last few mock results for this level */
+function historyHTML(){
+  const ms = (store.mocks[LV.key] || []).slice(-6);
+  if (!ms.length) return "";
+  const md = t => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()}`; };
+  return `<section class="sheet"><div class="sec-head">${tx("模考紀錄", "模試の記録")}<small>${tx(`最近 ${ms.length} 次・正確率`, `直近 ${ms.length} 回・正答率`)}</small></div>
+    <div class="hist">${ms.map(m => `<div class="hb"><div class="col" aria-hidden="true"><i style="height:${Math.max(4, m.pct)}%"></i></div><b>${m.pct}%</b><small>${md(m.at)}・${m.kind === "full" ? tx("完整", "本番") : tx("迷你", "ミニ")}</small>${m.est != null ? `<em class="${m.pass ? "ok" : "ng"}">${tx("估", "推定")} ${m.est}</em>` : ""}</div>`).join("")}</div></section>`;
+}
+/* Add to home screen: the browser's install prompt where there is one, otherwise how to do it by hand */
+const standalone = () => !!((window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true);
+function installHTML(){
+  if (standalone()) return "";
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const how = installEvt ? `<p><button class="btn sm" data-act="install">${tx("安裝到這台裝置", "この端末にインストール")}</button></p>`
+    : ios ? `<p>${tx("iPhone、iPad：用 Safari 打開這頁，按「分享」→「加入主畫面」。", "iPhone・iPad：Safari でこのページを開き、「共有」→「ホーム画面に追加」。")}</p>`
+    : `<p>${tx("Android：Chrome 選單 →「加到主畫面」或「安裝應用程式」。電腦版 Chrome、Edge：網址列右邊的安裝圖示。", "Android：Chrome のメニュー →「ホーム画面に追加」または「アプリをインストール」。パソコンの Chrome・Edge：アドレスバー右のインストールアイコン。")}</p>`;
+  return `<section class="sheet" id="install"><div class="sec-head">${tx("加到主畫面", "ホーム画面に追加")}<small>${tx("沒網路也能練", "オフライン対応")}</small></div><div class="pad" style="font-size:14px"><p>${tx("像 App 一樣從主畫面打開。開過的級數在沒有網路時也能練習；聽解要裝置本身有日文語音。", "アプリのようにホーム画面から開けます。一度開いたレベルはオフラインでも練習できます（聴解は端末の日本語音声が必要）。")}</p>${how}</div></section>`;
+}
 function renderHome(){
   view = "home"; $app.dataset.view = view; resetLook(); quiz = null;
   let nAns = 0, nOk = 0;
   ALL_IDS.forEach(id => { const st = store.stats[id]; if (st){ nAns += st.r + st.w; nOk += st.r; } });
   const acc = nAns ? Math.round(nOk / nAns * 100) + "%" : "—", best = store[bestKey()];
+  const lastFull = (store.mocks[LV.key] || []).filter(m => m.kind === "full").slice(-1)[0], fullMins = LV.exam.reduce((s, e) => s + e[1], 0);
   const deco = ["日","本","語","Ｎ", LV.full.slice(1)].map((c,i) => `<i class="${i === 4 && !reduceMotion ? "on" : ""}" ${i === 4 && reduceMotion ? 'style="background:var(--lead);color:var(--lead-ink);border-color:var(--lead)"' : ""} lang="ja">${c}</i>`).join("");
   const secRow = (s) => { const S = SECS[s], st = typeStats(SEC_TYPES[s]); return `<button class="mode" data-act="sec" data-s="${s}"><span class="tag" lang="ja">${S.short}<small>${S.mins} ${tx("分", "分")}</small></span><span><b>${tx(`${S.d[0]}練習`, `${S.d[1]}の練習`)}</b><span class="desc">${esc(L2(S.desc))}・${tx("做過", "解答済み")} ${st.seen}/${st.total}</span></span><span class="go">${tx("選題型 ›", "形式を選ぶ ›")}</span></button>`; };
   const nWrong = store.wrong.filter(id => ITEMS[id]).length, nVocab = VOCAB.length, nKnown = VOCAB.filter(v => store.known[v.k]).length, nMy = Object.keys(store.mywords).filter(k => JEK[k]).length;
@@ -5481,8 +5966,10 @@ function renderHome(){
       <div class="mast-body"><div><div class="deco" aria-hidden="true">${deco}</div><h1>${tx(`日檢 ${LV.label} 考前衝刺`, `JLPT ${LV.label} 直前対策`)}</h1><p>${tx("自編練習題，每題附中文翻譯和解析。", "オリジナル練習問題。全問に中国語訳と解説つき。")}</p></div>${countHTML()}</div>
       <div class="stats"><div class="stat"><span>${tx("已作答", "解答数")}</span><b>${nAns}</b></div><div class="stat"><span>${tx("正確率", "正答率")}</span><b>${acc}</b></div><div class="stat"><span>${tx("錯題本", "間違い")}</span><b>${nWrong}</b></div></div>
     </header>
+    ${todayHTML()}
     <section class="sheet"><div class="sec-head">${tx("練習模式", "練習メニュー")}<small>${tx(`共 ${ALL_IDS.length} 題`, `全 ${ALL_IDS.length} 問`)}</small></div><div class="modes">
       <button class="mode primary" data-act="mock"><span class="tag" lang="ja">模擬<small>${tx(`約 ${LV.mockN} 題`, `約 ${LV.mockN} 問`)}</small></span><span><b>${tx("迷你模考", "ミニ模試")}</b><span class="desc">${tx(`照正式順序：語彙 → 文法 → 讀解${tts.ok ? " → 聽解" : ""}，交卷後才看解析`, `本番と同じ順番：語彙 → 文法 → 読解${tts.ok ? " → 聴解" : ""}。解説は提出後に表示`)}${best ? `・${tx("最佳", "ベスト")} ${best.pct}%` : ""}</span></span><span class="go">${tx("開始 ›", "スタート ›")}</span></button>
+      <button class="mode primary" data-act="fullmock"><span class="tag" lang="ja">本番<small>${fullMins} ${tx("分", "分")}</small></span><span><b>${tx("完整模考", "本番形式の模試")}</b><span class="desc">${tx(`照正式節次和時間倒數計時，交卷後估算各科分數${tts.ok ? "" : "（這台裝置沒有語音，聽解會略過）"}`, `本番と同じ科目・時間でカウントダウン。提出後に得点区分ごとの点数を推定${tts.ok ? "" : "（音声がないため聴解はスキップ）"}`)}${lastFull ? `・${tx("上次", "前回")} ${lastFull.pct}%` : ""}</span></span><span class="go">${tx("開始 ›", "スタート ›")}</span></button>
       ${secRow("goi")}${secRow("bunpo")}${secRow("dokkai")}${secRow("chokai")}
       <button class="mode" data-act="cards"><span class="tag" lang="ja">単語<small>${tx(`${nVocab} 個`, `${nVocab} 語`)}</small></span><span><b>${tx("單字卡", "単語カード")}</b><span class="desc">${tx(`${LV.label} 常考單字，看漢字想讀音和意思・記住 ${nKnown}`, `${LV.label} 頻出単語。漢字から読みと意味を思い出す・覚えた ${nKnown}`)}</span></span><span class="go">${tx("翻卡 ›", "めくる ›")}</span></button>
       <button class="mode" data-act="mywords" ${nMy ? "" : "disabled"}><span class="tag" lang="ja">${tx("生字", "単語帳")}<small>${tx(`${nMy} 個`, `${nMy} 語`)}</small></span><span><b>${tx("生字本", "単語帳")}</b><span class="desc">${nMy ? tx("點字時收進來的單字，用卡片複習，記住了就移出", "保存した単語をカードで復習。覚えたら外れます") : tx("練習時點不會的日文單字，按「加入生字本」收進來", "練習中に単語をタップして「単語帳に追加」で保存")}</span></span><span class="go">${tx("複習 ›", "復習 ›")}</span></button>
@@ -5495,29 +5982,29 @@ function renderHome(){
     </section>
   </div>
   <div class="home-side">
+    ${historyHTML()}
     <section class="sheet"><div class="sec-head">${tx("考前清單", "持ち物・準備チェック")}<small>${tx("點一下打勾", "タップでチェック")}</small></div><ul class="check">
       ${CHECKS.map(([k,z,j]) => { const [t,s] = lang === "ja" ? j : z; return `<li><label><input type="checkbox" data-act="check" data-k="${k}" ${store.checks[k] ? "checked" : ""}><span>${esc(t)}<small>${esc(s)}</small></span></label></li>`; }).join("")}
     </ul></section>
     <section class="sheet"><div class="sec-head">${tx("考場策略", "試験のコツ")}</div><ol class="tips">${tipsOf().map(t => `<li>${lang === "ja" ? L2(t) : L2(t).replace(/「([^」]+)」/g, '<span lang="ja">「$1」</span>')}</li>`).join("")}</ol></section>
+    ${installHTML()}
     <section class="sheet"><div class="pad" style="font-size:14px;color:var(--muted)"><p>${tx("練習紀錄只存在這個瀏覽器，不會上傳。", "記録はこのブラウザだけに保存され、送信されません。")}</p><p><button class="btn-ghost" data-act="reset">${tx("清除練習紀錄", "記録をリセット")}</button></p></div></section>
   </div>`;
 }
-
 /* ---------------- Render: section picker ---------------- */
 function renderSec(s){
   view = "sec"; curSec = s; $app.dataset.view = view; resetLook();
   const S = SECS[s];
   const row = t => { const T = TYPES[t], x = typeStats([t]); const pct = x.total ? Math.round(x.seen / x.total * 100) : 0;
-    return `<div class="trow"><div><b lang="ja"><small>${T.no}</small>${T.name}</b><span>${esc(L2(T.d))}・${tx(`${x.total} 題・做過 ${x.seen}`, `${x.total} 問・解答済み ${x.seen}`)}${x.acc != null ? `・${tx("答對率", "正答率")} ${x.acc}%` : ""}</span><div class="meter"><i style="width:${pct}%"></i></div></div><button class="btn sm" data-act="type" data-t="${t}">${tx("練習", "練習")}</button></div>`; };
+    return `<div class="trow"><div><b lang="ja"><small>${T.no}</small>${T.name}</b><span>${esc(L2(T.d))}・${tx(`${x.total} 題・做過 ${x.seen}`, `${x.total} 問・解答済み ${x.seen}`)}${x.acc != null ? `・${tx("答對率", "正答率")} ${x.acc}%` : ""}</span><div class="meter"><i style="width:${pct}%"></i></div><details class="guide"><summary>${tx("題型攻略", "この形式の攻略")}</summary>${guideHTML(t)}</details></div><button class="btn sm" data-act="type" data-t="${t}">${tx("練習", "練習")}</button></div>`; };
   $app.innerHTML = `${prefsHTML()}
     <div class="qtop">${back()}<div class="qtitle" lang="ja">${S.name}</div></div>
     <section class="sheet"><div class="sec-head"><span lang="ja">${S.name}</span><small>${tx("正式考試", "本番")} ${L2(S.time)}</small></div>
       ${SEC_TYPES[s].map(row).join("")}
       <div class="trow"><div><b>${tx("全部混合", "ミックス")}</b><span>${tx("從這一科隨機出 10 題，沒做過的優先", "この科目からランダムに出題（未解答を優先）")}</span></div><button class="btn sm" data-act="secmix" data-s="${s}">${tx("開始", "スタート")}</button></div>
     </section>
-    ${s === "chokai" ? `<section class="sheet"><div class="pad" style="font-size:14px;color:var(--muted)"><p>${tx(`聽解用瀏覽器內建的日文語音念題目${hasJa() ? "" : "（這台裝置目前沒偵測到日文語音）"}。手機要先關掉靜音模式；沒有日文語音時可以按「顯示原文」用讀的練習。`, `聴解はブラウザの日本語音声で読み上げます${hasJa() ? "" : "（この端末では日本語音声が見つかりません）"}。スマホはマナーモードを解除してください。日本語音声がない場合は「スクリプトを表示」で読んで練習できます。`)}</p>${SEC_TYPES.chokai.includes("hatsuwa") ? `<p>${tx("正式考試的「發話表現」會看圖，這裡改用文字描述情境。", "本番の「発話表現」はイラストを見ますが、ここでは場面を文章で説明しています。")}</p>` : ""}${SEC_TYPES.chokai.includes("gaiyo") ? `<p>${tx("「概要理解」和正式考試一樣，問題和選項只用聽的；聽不清楚可以按「顯示原文」。", "「概要理解」は本番と同じく、質問と選択肢は音声だけです。聞き取れないときは「スクリプトを表示」を使ってください。")}</p>` : ""}${SEC_TYPES.chokai.includes("togoc") ? `<p>${tx("「統合理解」比較長。正式考試的 1、2 番連問題和選項都只用聽的；3 番先聽一段說明和兩個人的討論，再看印出來的選項回答兩個問題，這裡把兩個問題拆成連續的兩題。", "「統合理解」は長めの問題です。本番の1番・2番は質問も選択肢も音声だけ、3番は説明と二人の会話を聞いたあと、書かれた選択肢を見て二つの質問に答えます。ここでは二つの質問を続けて2問として出題します。")}</p>` : ""}</div></section>` : ""}`;
+    ${s === "chokai" ? `<section class="sheet"><div class="pad" style="font-size:14px;color:var(--muted)"><p>${tx(`聽解用瀏覽器內建的日文語音念題目${hasJa() ? "" : "（這台裝置目前沒偵測到日文語音）"}。手機要先關掉靜音模式；沒有日文語音時可以按「顯示原文」用讀的練習。`, `聴解はブラウザの日本語音声で読み上げます${hasJa() ? "" : "（この端末では日本語音声が見つかりません）"}。スマホはマナーモードを解除してください。日本語音声がない場合は「スクリプトを表示」で読んで練習できます。`)}</p><p>${tx("作答後的原文每一句前面都有播放鈕，可以一句一句重聽、跟著念。", "解答後のスクリプトは、各文の再生ボタンで一文ずつ聞き直せます。シャドーイングにも使えます。")}</p>${SEC_TYPES.chokai.includes("hatsuwa") ? `<p>${tx("正式考試的「發話表現」會看圖，這裡改用文字描述情境。", "本番の「発話表現」はイラストを見ますが、ここでは場面を文章で説明しています。")}</p>` : ""}${SEC_TYPES.chokai.includes("gaiyo") ? `<p>${tx("「概要理解」和正式考試一樣，問題和選項只用聽的；聽不清楚可以按「顯示原文」。", "「概要理解」は本番と同じく、質問と選択肢は音声だけです。聞き取れないときは「スクリプトを表示」を使ってください。")}</p>` : ""}${SEC_TYPES.chokai.includes("togoc") ? `<p>${tx("「統合理解」比較長。正式考試的 1、2 番連問題和選項都只用聽的；3 番先聽一段說明和兩個人的討論，再看印出來的選項回答兩個問題，這裡把兩個問題拆成連續的兩題。", "「統合理解」は長めの問題です。本番の1番・2番は質問も選択肢も音声だけ、3番は説明と二人の会話を聞いたあと、書かれた選択肢を見て二つの質問に答えます。ここでは二つの質問を続けて2問として出題します。")}</p>` : ""}</div></section>` : ""}`;
 }
-
 /* ---------------- Render: flashcards ---------------- */
 const VCATS = ["全部","還不熟","動詞","い形容詞","な形容詞","名詞","副詞・其他","外來語"];
 const VCAT_JA = {"全部":"すべて","還不熟":"まだ","動詞":"動詞","い形容詞":"い形容詞","な形容詞":"な形容詞","名詞":"名詞","副詞・其他":"副詞・その他","外來語":"外来語"};
@@ -5527,11 +6014,20 @@ function vocabIn(cat){
   if (cat === "還不熟") return VOCAB.filter(v => !store.known[v.k]);
   return VOCAB.filter(v => v.cat === cat);
 }
-function startCards(cat){ deck = {cat, cards: shuffle(vocabIn(cat)), i: 0, flipped: false, knew: 0}; renderCards(); }
+function startCards(cat){ deck = {cat, cards: shuffle(vocabIn(cat)).map(vocabCard), i: 0, flipped: false, knew: 0, miss: 0}; renderCards(); }
+/* One card view for three decks: 單字卡 (by category), 生字本, and 今日複習 (words, grammar and 生字本 words due today) */
 function renderCards(){
   view = "cards"; $app.dataset.view = view; resetLook();
-  const chips = deck.mine ? "" : VCATS.map(c => `<button class="chip" data-act="vcat" data-c="${c}" aria-pressed="${deck.cat === c}">${esc(tx(c, VCAT_JA[c]))}<small>${vocabIn(c).length}</small></button>`).join("");
-  const top = `${prefsHTML()}<div class="qtop">${back()}<div class="qtitle">${deck.mine ? tx("生字本", "単語帳") : tx("單字卡", "単語カード")}</div><div class="qcount">${Math.min(deck.i+1, deck.cards.length)}/${deck.cards.length}</div></div>${chips ? `<div class="chips">${chips}</div>` : ""}`;
+  const plainDeck = !deck.mine && !deck.review;
+  const chips = plainDeck ? VCATS.map(c => `<button class="chip" data-act="vcat" data-c="${c}" aria-pressed="${deck.cat === c}">${esc(tx(c, VCAT_JA[c]))}<small>${vocabIn(c).length}</small></button>`).join("") : "";
+  const title = deck.review ? tx("今日複習", "今日の復習") : deck.mine ? tx("生字本", "単語帳") : tx("單字卡", "単語カード");
+  const top = `${prefsHTML()}<div class="qtop">${back()}<div class="qtitle">${title}</div><div class="qcount">${Math.min(deck.i+1, deck.cards.length)}/${deck.cards.length}</div></div>${chips ? `<div class="chips">${chips}</div>` : ""}`;
+  if (deck.review && deck.i >= deck.cards.length){
+    markDone("review"); pruneDays(); save();
+    const p = reviewPlan(), left = p.due.length + p.fresh.length;
+    $app.innerHTML = `${top}<section class="sheet done-card"><p><b>${tx("今日複習完成", "今日の復習は完了です")}</b></p><p class="hint">${tx(`記住 ${deck.knew} 張・還不熟 ${deck.miss} 張（還不熟的明天會再出現）`, `覚えた ${deck.knew} 枚・まだ ${deck.miss} 枚（まだのカードは明日また出ます）`)}</p><div class="row">${left ? `<button class="btn" data-act="review">${tx(`繼續複習（還有 ${left} 張）`, `続ける（あと ${left} 枚）`)}</button>` : ""}<button class="btn${left ? " alt" : ""}" data-act="home">${tx("回首頁", "ホームへ")}</button></div></section>`;
+    return;
+  }
   if (deck.mine && deck.i >= deck.cards.length){
     const left = myCards().length;
     $app.innerHTML = `${top}<section class="sheet done-card"><p><b>${tx("生字本這一輪複習完了", "単語帳はひと通り終わりました")}</b></p><p class="hint">${tx(`記住 ${deck.knew} 個（已移出生字本），還剩 ${left} 個`, `覚えた ${deck.knew} 語（単語帳から外しました）・残り ${left} 語`)}</p><div class="row">${left ? `<button class="btn" data-act="mywords">${tx("再複習一次", "もう一度")}</button>` : ""}<button class="btn alt" data-act="home">${tx("回首頁", "ホームへ")}</button></div></section>`;
@@ -5542,24 +6038,40 @@ function renderCards(){
     $app.innerHTML = `${top}<section class="sheet done-card"><p><b>${deck.cards.length ? tx("這一疊翻完了", "このセットは終わりです") : tx("這一類沒有卡片", "カードがありません")}</b></p><p class="hint">${tx(`這輪記住 ${deck.knew} 個・總共記住 ${total}/${VOCAB.length}`, `今回覚えた ${deck.knew} 語・合計 ${total}/${VOCAB.length} 語`)}</p><div class="row"><button class="btn" data-act="vcat" data-c="還不熟">${tx("只翻還不熟的", "まだのカードだけ")}</button><button class="btn alt" data-act="vcat" data-c="${deck.cat}">${tx("這疊再一輪", "もう一周")}</button></div></section>`;
     return;
   }
-  const v = deck.cards[deck.i];
+  const v = deck.cards[deck.i], isG = v.kind === "g";
   const pct = Math.round(deck.i / deck.cards.length * 100);
-  const backFace = deck.flipped ? `${v.r !== v.k ? `<div class="fread" lang="ja">${esc(v.r)}</div>` : ""}<div class="fzh"${ZH}>${esc(v.zh)}</div>${v.ex ? `<div class="fex"><span lang="ja">${jpHTML(v.ex)}</span>${v.exzh ? `<small${ZH}>${deck.mine ? noteHTML(v.exzh) : esc(v.exzh)}</small>` : ""}</div>` : ""}` : `<div class="hint">${tx("先想讀音和意思，點卡片翻面", "読みと意味を考えてから、タップでめくる")}</div>`;
+  const tag = deck.review ? `<span class="ftag">${v.rq ? tx("再一次", "もう一度") : store.srs[v.sk] ? tx("複習", "復習") : tx("新卡", "新規")}</span>` : "";
+  const front = isG ? `<div class="fpos">${tx("文法", "文法")}・${gcat(v.cat)}</div><div class="fword gword" lang="ja">${esc(v.g)}</div>`
+    : `<div class="fpos" lang="ja">${v.kind === "m" ? esc(v.pos) : esc(lang === "ja" ? (POS_JA[v.pos] || v.pos) : v.pos)}${v.kind === "v" && store.known[v.k] ? tx("・已記住", "・覚えた") : ""}</div><div class="fword" lang="ja">${esc(v.k)}</div>`;
+  const backFace = !deck.flipped ? `<div class="hint">${isG ? tx("先想意思和接續，點卡片翻面", "意味と接続を考えてから、タップでめくる") : tx("先想讀音和意思，點卡片翻面", "読みと意味を考えてから、タップでめくる")}</div>`
+    : isG ? `<div class="fzh"${ZH}>${esc(v.zh)}</div><div class="fconn"><span>${tx("接續", "接続")}</span><span lang="ja">${esc(v.conn)}</span></div><div class="fex"><span lang="ja">${jpHTML(v.ex)}</span><small${ZH}>${esc(v.exzh)}</small></div>${v.tip ? `<div class="ftip"${ZH}>${noteHTML(v.tip)}</div>` : ""}`
+    : `${v.r !== v.k ? `<div class="fread" lang="ja">${esc(v.r)}</div>` : ""}<div class="fzh"${ZH}>${esc(v.zh)}</div>${v.ex ? `<div class="fex"><span lang="ja">${jpHTML(v.ex)}</span>${v.exzh ? `<small${ZH}>${v.kind === "m" ? noteHTML(v.exzh) : esc(v.exzh)}</small>` : ""}</div>` : ""}`;
   $app.innerHTML = `${top}<div class="bar"><i style="width:${pct}%"></i></div>
     <section class="sheet fcard" data-act="flip" role="button" tabindex="0" aria-label="${tx("翻面", "めくる")}">
-      ${tts.ok ? `<button class="say" data-act="sayv" aria-label="${tx("念出來", "読み上げ")}">${ICON_SPEAK}</button>` : ""}
-      <div class="fpos" lang="ja">${deck.mine ? esc(v.pos) : esc(lang === "ja" ? (POS_JA[v.pos] || v.pos) : v.pos)}${!deck.mine && store.known[v.k] ? tx("・已記住", "・覚えた") : ""}</div><div class="fword" lang="ja">${esc(v.k)}</div>${backFace}
+      ${tag}${tts.ok ? `<button class="say" data-act="sayv" aria-label="${tx("念出來", "読み上げ")}">${ICON_SPEAK}</button>` : ""}
+      ${front}${backFace}
     </section>
     <div class="cbtns"><button class="btn alt" data-act="unknown">${tx("還不熟", "まだ")}</button><button class="btn" data-act="known">${tx("記住了", "覚えた")}</button></div>
     <p class="kbd" style="text-align:center"><kbd>${tx("空白鍵", "スペース")}</kbd> ${tx("翻面", "めくる")}　<kbd>←</kbd> ${tx("還不熟", "まだ")}　<kbd>→</kbd> ${tx("記住了", "覚えた")}</p>`;
 }
 function cardAnswer(knew){
   const v = deck.cards[deck.i]; if (!v) return;
-  if (deck.mine){ if (knew){ delete store.mywords[v.key]; deck.knew++; } }
-  else if (knew){ store.known[v.k] = 1; deck.knew++; } else delete store.known[v.k];
+  const lg = todayLog(); lg.c++;
+  if (deck.mine && knew){ delete store.mywords[v.key]; delete store.srs[v.sk]; deck.knew++; }
+  else {
+    if (!v.rq){
+      if (deck.review){
+        /* a word or grammar card seen for the first time uses up one of today's new cards for this level */
+        if (!store.srs[v.sk] && v.kind !== "m"){ const f = v.kind === "g" ? "ng" : "nv"; lg[f] = lg[f] || {}; lg[f][LV.key] = (lg[f][LV.key] || 0) + 1; }
+        srsGrade(v.sk, knew);
+      } else if (store.srs[v.sk] || !knew) srsGrade(v.sk, knew);
+      if (knew) deck.knew++; else deck.miss++;
+    }
+    if (v.kind === "v"){ if (knew) store.known[v.k] = 1; else delete store.known[v.k]; }
+    if (!knew && deck.review && !v.rq) deck.cards.push({...v, rq: true});
+  }
   save(); deck.i++; deck.flipped = false; renderCards();
 }
-
 /* ---------------- Render: grammar reference ---------------- */
 const gcats = () => ["全部", ...new Set(GRAMMAR.map(g => g.cat))];
 const GCAT_JA = {"全部":"すべて","授受":"授受表現","被動・使役":"受身・使役","推測・樣態":"推量・様態","條件":"条件","逆接・讓步":"逆接・譲歩","時間・狀態":"時間・状態","目的・原因":"目的・原因","變化・決定":"変化・決定","許可・義務":"許可・義務","比較・程度":"比較・程度","敬語":"敬語","助詞":"助詞","句型":"文型","強調・限定":"強調・限定","評價・感情":"評価・感情","話題・關聯":"話題・関連","範圍・對象":"範囲・対象","書面語":"書き言葉","其他":"その他"};
@@ -5653,6 +6165,7 @@ function renderLoading(k){
 function again(){
   const m = quiz.mode;
   if (m === "mock") return startQuiz("mock", buildMock(), true);
+  if (m === "full") return startFullMock();
   if (m.startsWith("type:")) return startType(m.slice(5));
   if (m.startsWith("sec:")) return startSecMix(m.slice(4));
   if (m === "wrong" || m === "retry") return startWrong();
@@ -5662,6 +6175,7 @@ function startWrong(){ const ids = shuffle(store.wrong.filter(id => ITEMS[id])).
 /* Redraw the current screen after a language switch; answers, timers and card position are kept */
 function rerender(){
   if ((view === "quiz" || view === "quiz-p") && quiz) renderQuiz(false);
+  else if (view === "fullbreak" && quiz) renderFullBreak();
   else if (view === "result" && quiz) renderResult(false);
   else if (view === "cards" && deck) renderCards();
   else if (view === "grammar") renderGrammar();
@@ -5670,6 +6184,7 @@ function rerender(){
   else if (view === "loading" && wantLevel) renderLoading(wantLevel);
   else renderHome();
 }
+const leaveExam = () => !inExam() || confirm(tx("現在離開，這次模考就不會記錄。確定要離開嗎？", "今やめると、この模試は記録されません。やめますか？"));
 $app.addEventListener("click", e => {
   const wEl = e.target.closest(".w");
   if (wEl){
@@ -5678,21 +6193,27 @@ $app.addEventListener("click", e => {
   }
   const el = e.target.closest("[data-act]"); if (!el) return;
   const act = el.dataset.act;
+  /* a button in 今日任務 carries the task it completes */
+  pendingTask = el.dataset.task || null;
   switch (act){
-    case "home": return goHome();
+    case "home": if (!leaveExam()) return; return goHome();
     case "lang":
       if (lang !== el.dataset.v){ lang = store.lang = el.dataset.v; save(); applyLang(); rerender(); }
       return;
     case "lvmenu": return levelMenu();
     case "level":
       levelMenu(false);
-      if (el.dataset.v !== LV.key || view === "loading") switchLevel(el.dataset.v);
+      if ((el.dataset.v !== LV.key || view === "loading") && leaveExam()) switchLevel(el.dataset.v);
       return;
     case "theme":
       store.theme = el.dataset.v; save(); applyTheme();
       document.querySelectorAll('[data-act="theme"]').forEach(b => b.setAttribute("aria-pressed", b.dataset.v === currentTheme()));
       return;
     case "mock": return startQuiz("mock", buildMock(), true);
+    case "fullmock": return startFullMock();
+    case "fullgo": return beginSection();
+    case "jump": stopSpeech(); quiz.i = +el.dataset.i; renderQuiz(true); return window.scrollTo(0,0);
+    case "review": return startReview();
     case "sec": renderSec(el.dataset.s); return window.scrollTo(0,0);
     case "type": return startType(el.dataset.t);
     case "secmix": return startSecMix(el.dataset.s);
@@ -5700,7 +6221,9 @@ $app.addEventListener("click", e => {
     case "skip": quiz.answers[cur().it.id] = undefined; return next();
     case "next": return next();
     case "play": { const q = cur(); return speakSeq(audioParts(q.it, q.order)); }
+    case "line": return speakSeq([{text: el.dataset.t, role: el.dataset.r || "n", gap: 0}]);
     case "reveal": cur().reveal = true; return renderQuiz(false);
+    case "guide": quiz.guide = !quiz.guide; return renderQuiz(false);
     case "slow": store.slow = !store.slow; save(); el.setAttribute("aria-pressed", store.slow ? "true" : "false"); { const q = cur(); return speakSeq(audioParts(q.it, q.order)); }
     case "furi": store.furi = !store.furi; save(); applyFuri(); el.setAttribute("aria-pressed", store.furi ? "true" : "false"); return;
     case "retry": { const ids = quiz.items.filter(x => !(quiz.answers[x.it.id] && quiz.answers[x.it.id].ok)).map(x => x.it); return startQuiz("retry", ids); }
@@ -5710,18 +6233,20 @@ $app.addEventListener("click", e => {
     case "mywords": return startMyWords();
     case "vcat": return startCards(el.dataset.c);
     case "flip": if (e.target.closest(".say")) return; deck.flipped = !deck.flipped; return renderCards();
-    case "sayv": e.stopPropagation(); { const v = deck.cards[deck.i]; if (v) sayText(v.r); } return;
+    case "sayv": e.stopPropagation(); { const v = deck.cards[deck.i]; if (v) sayText(v.kind === "g" ? v.ex : v.r); } return;
     case "known": return cardAnswer(true);
     case "unknown": return cardAnswer(false);
+    case "goal": store.goal = +el.dataset.n; save(); return renderHome();
+    case "install": return installApp();
     case "grammar": gram = {q:"", cat:"全部"}; renderGrammar(); return window.scrollTo(0,0);
     case "gcat": gram.cat = el.dataset.c; return renderGrammar();
     case "sayg": e.preventDefault(); return sayText(el.dataset.t);
     case "info": return renderInfo();
     case "reset":
-      if (confirm(tx("確定清除所有練習紀錄、錯題本和單字卡進度？", "すべての記録、間違えた問題、単語カードの進み具合を消しますか？"))){
-        const keep = {furi: store.furi, checks: store.checks, lang: store.lang, theme: store.theme, mywords: store.mywords, slow: store.slow, level: store.level};
+      if (confirm(tx("確定清除所有練習紀錄、錯題本、單字卡和複習進度、模考紀錄？（生字本會留著）", "すべての記録、間違えた問題、単語カードと復習の進み具合、模試の記録を消しますか？（単語帳は残ります）"))){
+        const keep = {furi: store.furi, checks: store.checks, lang: store.lang, theme: store.theme, mywords: store.mywords, slow: store.slow, level: store.level, goal: store.goal};
         Object.keys(store).forEach(k => delete store[k]);
-        Object.assign(store, {stats:{}, wrong:[], answered:0, correct:0, known:{}, best:null}, keep); save(); renderHome();
+        Object.assign(store, {stats:{}, wrong:[], answered:0, correct:0, known:{}, best:null, days:{}, srs:{}, mocks:{}}, keep); save(); renderHome();
       }
       return;
   }
@@ -5749,7 +6274,7 @@ document.addEventListener("keydown", e => {
   if ((view === "quiz" || view === "quiz-p") && quiz){
     const q = cur(), a = quiz.answers[q.it.id];
     const n = q.it.o.length;
-    if (!a && /^[1-4]$/.test(e.key) && +e.key <= n){ e.preventDefault(); return select(+e.key - 1); }
+    if ((!a || quiz.exam) && /^[1-4]$/.test(e.key) && +e.key <= n){ e.preventDefault(); return select(+e.key - 1); }
     if (a && e.key === "Enter" && e.target.tagName !== "BUTTON"){ e.preventDefault(); return next(); }
     if (e.key === " " && AUDIO_TYPES.has(q.it.type) && tts.ok && e.target.tagName !== "BUTTON"){ e.preventDefault(); return speakSeq(audioParts(q.it, q.order)); }
   }
@@ -5760,6 +6285,22 @@ document.addEventListener("keydown", e => {
   }
   if (view === "cards" && e.key === "Enter" && e.target.classList && e.target.classList.contains("fcard")){ deck.flipped = !deck.flipped; renderCards(); }
 });
+
+/* ---------------- Install and offline use ----------------
+   sw.js keeps a copy of the page and of each level file once loaded; it always tries the network first. */
+let installEvt = null;
+function refreshInstall(){ const box = document.getElementById("install"); if (box) box.outerHTML = installHTML(); }
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; refreshInstall(); });
+window.addEventListener("appinstalled", () => { installEvt = null; refreshInstall(); });
+function installApp(){
+  if (!installEvt) return;
+  const ev = installEvt; installEvt = null;
+  ev.prompt();
+  Promise.resolve(ev.userChoice).catch(() => {}).then(refreshInstall);
+}
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")){
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
 
 if (START_LEVEL === "n4") renderHome(); else switchLevel(START_LEVEL);
 </script>
